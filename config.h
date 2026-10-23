@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        1
+#define FIRMWARE_VERSION        2
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
@@ -22,10 +22,10 @@
 #define IR_PINS                 {5, 4, 14, 12, 13}
 #define IR_PIN_MAIN             5   // One of IR_PINS. Passed to the IR library.
 
-/* TV power toggle code. Unknown for VOX 32DIS471B, so this is a guess (RC5 TV standby: address 0, command 12).
- * Find the right one using /send?protocol=NEC&code=0x...&bits=32 and put it here. */
+/* TV power toggle code. VOX 32DIS471B: RC5 address 1, command 12 (found with /scan, index 235).
+ * For another TV find it using the scan on the main page and put it here. */
 #define TV_POWER_PROTOCOL       "RC5"
-#define TV_POWER_CODE           0x00C
+#define TV_POWER_CODE           0x04C
 #define TV_POWER_BITS           12
 
 #define WIFI_PASS_EEPROM_ADDR   (0)

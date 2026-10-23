@@ -106,6 +106,9 @@ static bool checkRepository(void){
 
   Serial.println("OTA: downloading newer firmware...");
   updateStatus = "installing";
+  /* Onboard LED (GPIO2, active LOW) stays on while downloading. */
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
   BearSSL::WiFiClientSecure client;
   client.setInsecure();
   ESPhttpUpdate.rebootOnUpdate(false);
@@ -117,7 +120,9 @@ static bool checkRepository(void){
   });
   /* Checks image header and free space, writes to the free flash area and
    * schedules the copy for next boot only after a complete download. */
-  if(ESPhttpUpdate.update(client, base + "/" + OTA_FIRMWARE_PATH) != HTTP_UPDATE_OK){
+  t_httpUpdate_return result = ESPhttpUpdate.update(client, base + "/" + OTA_FIRMWARE_PATH);
+  digitalWrite(LED_BUILTIN, HIGH);
+  if(result != HTTP_UPDATE_OK){
     Serial.printf("OTA: update failed: %s\n", ESPhttpUpdate.getLastErrorString().c_str());
     return false;
   }

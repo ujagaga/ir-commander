@@ -6,6 +6,8 @@
  *
  *  GET /power                                          - send TV power code
  *  GET /update                                         - check GitHub for newer firmware now
+ *  GET /scan?i=N                                      - send code N from the universal TV power list
+ *  GET /ac?power=1&mode=0&temp=24&fan=0                 - Midea AC (mode 0 cool,1 dry,2 auto,3 heat,4 fan; fan 0 auto,1 low,2 med,3 high)
  *  GET /send?protocol=NEC&code=0x20DF10EF[&bits=32][&repeat=0] - send any code (for finding the right one)
  */
 
@@ -27,7 +29,7 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
       .contain{width: 100%;}
       .center_div{margin:0 auto; max-width: 400px;position:relative;}
       button{width:100%;border:0;border-radius:0.3rem;color:#fff;line-height:2.4rem;font-size:1.2rem;background-color:#1fa3ec;}
-      .btn_pwr{line-height:6rem;font-size:3rem;background-color:#e53935;}
+      .btn_pwr{line-height:6rem;font-size:3rem;background-color:#e53935;user-select:none;-webkit-user-select:none;touch-action:none;}
       .btn_cfg{width:10rem;font-size:0.8rem;line-height:2rem;background-color:#ff3300;}
       input{width:95%;padding:5px;font-size:1em;}
     </style>
@@ -39,8 +41,28 @@ static const char HTML_END[] PROGMEM = "</div></div></body></html>";
 
 static const char INDEX_HTML[] PROGMEM = R"html(
   <h1>IR Commander</h1>
-  <button class="btn_pwr" type="button" onclick="pwr()">&#x23FB;</button>
+  <button class="btn_pwr" type="button" onpointerdown="pwr(true)" onpointerup="pwr(false)" onpointerleave="pwr(false)" onpointercancel="pwr(false)" oncontextmenu="return false;">&#x23FB;</button>
   <p id='res'></p>
+  <hr>
+  <h3>Air conditioner</h3>
+  <select id='am'><option value='0'>Cool</option><option value='3'>Heat</option><option value='2'>Auto</option><option value='1'>Dry</option><option value='4'>Fan</option></select>
+  <select id='at'></select>
+  <select id='af'><option value='0'>Fan auto</option><option value='1'>Low</option><option value='2'>Medium</option><option value='3'>High</option></select><br><br>
+  <div style="display:flex;gap:4px">
+    <button type="button" onclick="ac(1)">AC on</button>
+    <button type="button" onclick="ac(0)">AC off</button>
+  </div>
+  <hr>
+  <h3>Find TV power code</h3>
+  <p>Auto sends the next code every 2s. Stop when the TV reacts, then use Prev/Again to confirm.</p>
+  <input id='si' value='0' placeholder='code index'><br><br>
+  <div style="display:flex;gap:4px">
+    <button type="button" id="sa" onclick="auto()">Auto</button>
+    <button type="button" onclick="step(-1)">Prev</button>
+    <button type="button" onclick="step(0)">Again</button>
+    <button type="button" onclick="step(1)">Next</button>
+  </div>
+  <p id='sres'></p>
   <hr>
   <h3>Test code</h3>
   <input id='pr' placeholder='protocol (NEC, RC5, RC6, SAMSUNG...)'><br>
@@ -54,7 +76,45 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   function get(url){
     fetch(url).then(r=>r.text()).then(t=>{document.getElementById('res').innerText=t;});
   }
-  function pwr(){ get('/power'); }
+  /* Keeps sending the power code while the button is held. */
+  var held=false, n=0;
+  function pwr(down){
+    if(down && !held){ held=true; n=0; rep(); }
+    if(!down) held=false;
+  }
+  function rep(){
+    if(!held) return;
+    fetch('/power').then(r=>r.text()).then(t=>{document.getElementById('res').innerText=t+' x'+(++n);}).finally(rep);
+  }
+  for(var t=17;t<=30;t++){ document.getElementById('at').innerHTML+='<option'+(t==24?' selected':'')+'>'+t+'</option>'; }
+  function ac(p){
+    var v=function(id){return document.getElementById(id).value;};
+    get('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af'));
+  }
+  var scanning=false;
+  function scan(i){
+    if(i<0) i=0;
+    document.getElementById('si').value=i;
+    return fetch('/scan?i='+i).then(r=>{
+      return r.text().then(t=>{document.getElementById('sres').innerText=t; return r.ok;});
+    });
+  }
+  function step(d){
+    scanning=false; document.getElementById('sa').innerText='Auto';
+    scan(parseInt(document.getElementById('si').value||0)+d);
+  }
+  function auto(){
+    scanning=!scanning;
+    document.getElementById('sa').innerText=scanning?'Stop':'Auto';
+    if(scanning) scan(parseInt(document.getElementById('si').value||0)).then(next);
+  }
+  function next(ok){
+    if(!ok){ scanning=false; document.getElementById('sa').innerText='Auto'; }
+    if(!scanning) return;
+    setTimeout(function(){
+      if(scanning) scan(parseInt(document.getElementById('si').value)+1).then(next);
+    },2000);
+  }
   function tst(){
     var v=function(id){return encodeURIComponent(document.getElementById(id).value);};
     get('/send?protocol='+v('pr')+'&code='+v('cd')+'&bits='+v('bt'));
@@ -133,6 +193,21 @@ static void checkUpdate(void){
   }
 }
 
+static void scanCode(void){
+  uint16_t i = webServer.arg("i").toInt();
+  if(i >= IR_scanCount()){
+    webServer.send(400, "text/plain", "End of list");
+    return;
+  }
+  webServer.send(200, "text/plain", IR_scanSend(i));
+}
+
+static void airCon(void){
+  IR_sendMideaAc(webServer.arg("power").toInt(), webServer.arg("mode").toInt(),
+                 webServer.arg("temp").toInt(), webServer.arg("fan").toInt());
+  webServer.send(200, "text/plain", "OK");
+}
+
 static void showNotFound(void){
   webServer.send(404, "text/plain", "Not Found");
 }
@@ -181,6 +256,8 @@ void HTTP_SERVER_init(void){
   webServer.on("/favicon.ico", showNotFound);
   webServer.on("/power", power);
   webServer.on("/send", sendCode);
+  webServer.on("/scan", scanCode);
+  webServer.on("/ac", airCon);
   webServer.on("/update", checkUpdate);
   webServer.on("/selectap", selectAP);
   webServer.on("/aplist", apList);
