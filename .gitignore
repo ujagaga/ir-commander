@@ -1,0 +1,3 @@
+.cache/
+build/*
+!build/ir-commander.ino.bin
