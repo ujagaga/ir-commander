@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        4
+#define FIRMWARE_VERSION        6
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
@@ -22,14 +22,17 @@
 #define IR_PINS                 {5, 4, 14, 12, 13}
 #define IR_PIN_MAIN             5   // One of IR_PINS. Passed to the IR library.
 
-/* TV power toggle code. VOX 32DIS471B: RC5 address 1, command 12 (found with /scan, index 235).
- * For another TV find it using the scan on the main page and put it here. */
-#define TV_POWER_PROTOCOL       "RC5"
-#define TV_POWER_CODE           0x04C
-#define TV_POWER_BITS           12
+/* Defaults until changed on the Settings page (stored in EEPROM).
+ * TV code is an index into the TV power list in ir_codes.h; it changes if that file is regenerated. */
+#define TV_CODE_DEFAULT         235       // VOX 32DIS471B: RC5 0x4C 12 bits
+#define AC_PROTOCOL_DEFAULT     "COOLIX"  // Midea RG70A/BGEF remote
 
-/* AC protocol used by /ac when no protocol parameter is given. Find it using the AC scan on the main page. */
-#define AC_PROTOCOL             "MIDEA"
+/* Other TV buttons. VOX 32DIS471B: standard Philips RC5 commands on address 1 (12 bits). */
+#define TV_BUTTONS_PROTOCOL     "RC5"
+#define TV_BUTTONS_BITS         12
+#define TV_VOLUME_UP_CODE       0x050     // command 16
+#define TV_VOLUME_DOWN_CODE     0x051     // command 17
+#define TV_MUTE_CODE            0x04D     // command 13
 
 #define WIFI_PASS_EEPROM_ADDR   (0)
 #define WIFI_PASS_SIZE          (64)  // WPA2 passphrase up to 63 chars + terminator
@@ -37,6 +40,11 @@
 #define SSID_SIZE               (33)  // SSID up to 32 chars + terminator
 #define OTA_TARGET_EEPROM_ADDR  (SSID_EEPROM_ADDR + SSID_SIZE)
 #define OTA_TARGET_SIZE         (4)   // uint32_t version being installed
-#define EEPROM_SIZE             (WIFI_PASS_SIZE + SSID_SIZE + OTA_TARGET_SIZE)
+#define TV_CODE_EEPROM_ADDR     (OTA_TARGET_EEPROM_ADDR + OTA_TARGET_SIZE)
+#define TV_CODE_SIZE            (2)   // uint16_t index into TV power list
+#define AC_PROTOCOL_EEPROM_ADDR (TV_CODE_EEPROM_ADDR + TV_CODE_SIZE)
+#define AC_PROTOCOL_SIZE        (1)   // decode_type_t as uint8_t
+/* Library rounds the size up to 4 bytes, so 104 keeps the same layout as before these settings (WiFi survives). */
+#define EEPROM_SIZE             (WIFI_PASS_SIZE + SSID_SIZE + OTA_TARGET_SIZE + TV_CODE_SIZE + AC_PROTOCOL_SIZE)
 
 #endif

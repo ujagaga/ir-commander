@@ -2,7 +2,7 @@
  *  Author: Rada Berar
  *  email: ujagaga@gmail.com
  *
- *  ESP8266 (D1 mini) IR remote: sends TV power code on HTTP GET /power.
+ *  ESP8266 (D1 mini) IR remote for a TV and an air conditioner, controlled over HTTP.
  */
 
 #include "wifi_connection.h"

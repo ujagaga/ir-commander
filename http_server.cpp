@@ -2,13 +2,15 @@
  *  Author: Rada Berar
  *  email: ujagaga@gmail.com
  *
- *  HTTP server: control page, IR trigger API and WiFi configuration.
+ *  HTTP server: home page, settings page, IR trigger API and WiFi configuration.
  *
- *  GET /power                                          - send TV power code
+ *  GET /tv?cmd=power                                   - TV button: power (stored code), volume_up, volume_down, mute
+ *  GET /ac?power=1&mode=cool&temp=24&fan=auto[&protocol=COOLIX] - AC (mode cool,heat,auto,dry,fan; fan auto,low,medium,high)
+ *                                                        Without protocol the stored one is used.
  *  GET /update                                         - check GitHub for newer firmware now
- *  GET /scan?l=L&i=N                                  - send code N from scan list L (see /scanlists)
- *  GET /scanlists                                      - scan list titles, '|' separated
- *  GET /ac?power=1&mode=cool&temp=24&fan=auto[&protocol=MIDEA] - AC (mode cool,heat,auto,dry,fan; fan auto,low,medium,high)
+ *  GET /tvcodes                                        - TV power code list, one description per line
+ *  GET /scan?i=N                                       - send TV power code N
+ *  GET /save?tv=N&ac=COOLIX                            - store TV code index and AC protocol to EEPROM
  *  GET /acprotocols                                    - supported AC protocols, '|' separated
  *  GET /send?protocol=NEC&code=0x20DF10EF[&bits=32][&repeat=0] - send any code (for finding the right one)
  */
@@ -31,123 +33,163 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
       .contain{width: 100%;}
       .center_div{margin:0 auto; max-width: 400px;position:relative;}
       button{width:100%;border:0;border-radius:0.3rem;color:#fff;line-height:2.4rem;font-size:1.2rem;background-color:#1fa3ec;}
-      .btn_pwr{line-height:6rem;font-size:3rem;background-color:#e53935;user-select:none;-webkit-user-select:none;touch-action:none;}
-      .btn_cfg{width:10rem;font-size:0.8rem;line-height:2rem;background-color:#ff3300;}
+      .btn_pwr{line-height:6rem;font-size:3rem;background-color:#e53935;}
+      .hold{user-select:none;-webkit-user-select:none;touch-action:none;}
       input{width:95%;padding:5px;font-size:1em;}
+      select{padding:5px;font-size:1em;max-width:100%;}
+      .row{display:flex;gap:4px;}
+      .nav{display:flex;gap:1.5rem;padding:0.6rem 0;margin-bottom:0.5rem;border-bottom:2px solid #1fa3ec;}
+      .nav a{color:#1fa3ec;text-decoration:none;font-weight:bold;font-size:1.2rem;}
     </style>
   </head>
   <body><div class="contain"><div class="center_div">
+  <div class="nav"><a href="/">Home</a><a href="/settings">Settings</a></div>
 )html";
 
 static const char HTML_END[] PROGMEM = "</div></div></body></html>";
 
 static const char INDEX_HTML[] PROGMEM = R"html(
-  <h1>IR Commander</h1>
-  <button class="btn_pwr" type="button" onpointerdown="pwr(true)" onpointerup="pwr(false)" onpointerleave="pwr(false)" onpointercancel="pwr(false)" oncontextmenu="return false;">&#x23FB;</button>
-  <p id='res'></p>
+  <h3>TV</h3>
+  <button class="btn_pwr hold" type="button" data-cmd="power">&#x23FB;</button><br><br>
+  <div class="row">
+    <button class="hold" type="button" data-cmd="volume_down">Vol &minus;</button>
+    <button class="hold" type="button" data-cmd="mute">Mute</button>
+    <button class="hold" type="button" data-cmd="volume_up">Vol +</button>
+  </div>
   <hr>
   <h3>Air conditioner</h3>
-  <select id='ap'></select>
   <select id='am'><option value='cool'>Cool</option><option value='heat'>Heat</option><option value='auto'>Auto</option><option value='dry'>Dry</option><option value='fan'>Fan</option></select>
   <select id='at'></select>
   <select id='af'><option value='auto'>Fan auto</option><option value='low'>Low</option><option value='medium'>Medium</option><option value='high'>High</option></select><br><br>
-  <div style="display:flex;gap:4px">
-    <button type="button" onclick="ac(1)">AC on</button>
-    <button type="button" onclick="ac(0)">AC off</button>
-    <button type="button" id="aa" onclick="acAuto()">Scan</button>
+  <div class="row">
+    <button type="button" onclick="ac(1)">ON</button>
+    <button type="button" onclick="ac(0)">OFF</button>
   </div>
-  <p>Scan: with the AC running, sends "off" in the next protocol every 3s. Stop when the AC turns off.</p>
+  <p id='res'></p>
+<script>
+  function show(t){ document.getElementById('res').innerText=t; }
+  /* TV buttons keep sending their command while held. */
+  var held=null, n=0;
+  function rep(){
+    if(!held) return;
+    var cmd=held;
+    fetch('/tv?cmd='+cmd).then(r=>r.text()).then(t=>{show('TV '+cmd+' '+t+' x'+(++n));}).finally(rep);
+  }
+  document.querySelectorAll('.hold').forEach(function(b){
+    b.onpointerdown=function(){ if(!held){ held=b.dataset.cmd; n=0; rep(); } };
+    b.onpointerup=b.onpointerleave=b.onpointercancel=function(){ held=null; };
+    b.oncontextmenu=function(){ return false; };
+  });
+  for(var t=17;t<=30;t++){ document.getElementById('at').innerHTML+='<option'+(t==24?' selected':'')+'>'+t+'</option>'; }
+  function ac(p){
+    var v=function(id){return document.getElementById(id).value;};
+    fetch('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af')).then(r=>r.text()).then(t=>{show('AC '+t);});
+  }
+</script>
+)html";
+
+static const char SETTINGS_HTML[] PROGMEM = R"html(
+  <h3>TV code</h3>
+  <select id='tv'><option>Loading...</option></select><br><br>
+  <div class="row">
+    <button type="button" id="ta" onclick="tvAuto()">Scan</button>
+    <button type="button" onclick="tvStep(-1)">Prev</button>
+    <button type="button" onclick="tvStep(0)">Test</button>
+    <button type="button" onclick="tvStep(1)">Next</button>
+  </div>
+  <p>Scan sends the next code every 2s. Stop when the TV reacts, then use Prev/Test to confirm.</p>
+  <p id='tres'></p>
+  <hr>
+  <h3>AC protocol</h3>
+  <select id='ac'><option>Loading...</option></select><br><br>
+  <div class="row">
+    <button type="button" id="aa" onclick="acAuto()">Scan</button>
+    <button type="button" onclick="acSend(1)">Test ON</button>
+    <button type="button" onclick="acSend(0)">Test OFF</button>
+  </div>
+  <p>Scan: with the AC running, sends OFF in the next protocol every 3s. Stop when the AC turns off.</p>
   <p id='ares'></p>
   <hr>
-  <h3>Find code</h3>
-  <p>Auto sends the next code every 2s. Stop when the device reacts, then use Prev/Again to confirm.</p>
-  <select id='sl' onchange="document.getElementById('si').value=0"></select>
-  <input id='si' value='0' placeholder='code index'><br><br>
-  <div style="display:flex;gap:4px">
-    <button type="button" id="sa" onclick="auto()">Auto</button>
-    <button type="button" onclick="step(-1)">Prev</button>
-    <button type="button" onclick="step(0)">Again</button>
-    <button type="button" onclick="step(1)">Next</button>
-  </div>
+  <button type="button" onclick="save()">Save TV code and AC protocol</button>
   <p id='sres'></p>
   <hr>
-  <h3>Test code</h3>
+  <h3>Test any code</h3>
   <input id='pr' placeholder='protocol (NEC, RC5, RC6, SAMSUNG...)'><br>
   <input id='cd' placeholder='code (e.g. 0x20DF10EF)'><br>
   <input id='bt' placeholder='bits (empty = protocol default)'><br><br>
   <button type="button" onclick="tst()">Send</button>
+  <p id='xres'></p>
   <hr>
-  <button class="btn_cfg" type="button" onclick="location.href='/selectap';">Configure wifi</button>
-  <button class="btn_cfg" type="button" onclick="get('/update')">Check for update</button>
+  <h3>System</h3>
+  <div class="row">
+    <button type="button" onclick="location.href='/selectap';">Configure WiFi</button>
+    <button type="button" onclick="get('/update','sres')">Check for update</button>
+  </div>
 <script>
-  function get(url){
-    fetch(url).then(r=>r.text()).then(t=>{document.getElementById('res').innerText=t;});
+  function $(id){ return document.getElementById(id); }
+  function get(url,out){
+    return fetch(url).then(r=>r.text().then(t=>{ $(out).innerText=t; return r.ok; }));
   }
-  /* Keeps sending the power code while the button is held. */
-  var held=false, n=0;
-  function pwr(down){
-    if(down && !held){ held=true; n=0; rep(); }
-    if(!down) held=false;
-  }
-  function rep(){
-    if(!held) return;
-    fetch('/power').then(r=>r.text()).then(t=>{document.getElementById('res').innerText=t+' x'+(++n);}).finally(rep);
-  }
-  for(var t=17;t<=30;t++){ document.getElementById('at').innerHTML+='<option'+(t==24?' selected':'')+'>'+t+'</option>'; }
-  fetch('/acprotocols').then(r=>r.text()).then(t=>{
-    t.split('|').forEach(function(p){ document.getElementById('ap').innerHTML+='<option'+(p==')html" AC_PROTOCOL R"html('?' selected':'')+'>'+p+'</option>'; });
+  fetch('/tvcodes').then(r=>r.text()).then(t=>{
+    var h=''; t.trim().split('\n').forEach(function(d,i){ h+='<option value='+i+(i==tvCur?' selected':'')+'>'+i+': '+d+'</option>'; });
+    $('tv').innerHTML=h;
   });
-  function ac(p){
-    var v=function(id){return document.getElementById(id).value;};
-    return fetch('/ac?protocol='+v('ap')+'&power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af')).then(r=>r.text()).then(t=>{
-      var s=document.getElementById('ap'); document.getElementById('ares').innerText=s.selectedIndex+'/'+(s.length-1)+': '+s.value+' '+t;
+  fetch('/acprotocols').then(r=>r.text()).then(t=>{
+    var h=''; t.split('|').forEach(function(p){ h+='<option'+(p==acCur?' selected':'')+'>'+p+'</option>'; });
+    $('ac').innerHTML=h;
+  });
+  /* TV code scan moves through the dropdown. */
+  var tvScanning=false;
+  function tvSend(i){
+    var s=$('tv');
+    if(i<0 || i>=s.length) return Promise.resolve(false);
+    s.selectedIndex=i;
+    return get('/scan?i='+i,'tres');
+  }
+  function tvStep(d){
+    tvScanning=false; $('ta').innerText='Scan';
+    tvSend($('tv').selectedIndex+d);
+  }
+  function tvAuto(){
+    tvScanning=!tvScanning;
+    $('ta').innerText=tvScanning?'Stop':'Scan';
+    if(tvScanning) tvSend($('tv').selectedIndex).then(tvNext);
+  }
+  function tvNext(ok){
+    if(!ok){ tvScanning=false; $('ta').innerText='Scan'; }
+    if(!tvScanning) return;
+    setTimeout(function(){
+      if(tvScanning) tvSend($('tv').selectedIndex+1).then(tvNext);
+    },2000);
+  }
+  /* AC protocol scan moves through the dropdown. */
+  var acScanning=false;
+  function acSend(p){
+    var s=$('ac');
+    return fetch('/ac?protocol='+s.value+'&power='+p+'&mode=cool&temp=24&fan=auto').then(r=>r.text()).then(t=>{
+      $('ares').innerText=s.selectedIndex+'/'+(s.length-1)+': '+s.value+' '+t;
     });
   }
-  var acScanning=false;
   function acAuto(){
     acScanning=!acScanning;
-    document.getElementById('aa').innerText=acScanning?'Stop':'Scan';
-    if(acScanning) ac(0).then(acNext);
+    $('aa').innerText=acScanning?'Stop':'Scan';
+    if(acScanning) acSend(0).then(acNext);
   }
   function acNext(){
     setTimeout(function(){
-      var s=document.getElementById('ap');
+      var s=$('ac');
       if(!acScanning) return;
       if(s.selectedIndex>=s.length-1){ acAuto(); return; }
       s.selectedIndex++;
-      ac(0).then(acNext);
+      acSend(0).then(acNext);
     },3000);
   }
-  fetch('/scanlists').then(r=>r.text()).then(t=>{
-    t.split('|').forEach(function(n,i){ document.getElementById('sl').innerHTML+='<option value='+i+'>'+n+'</option>'; });
-  });
-  var scanning=false;
-  function scan(i){
-    if(i<0) i=0;
-    document.getElementById('si').value=i;
-    return fetch('/scan?l='+document.getElementById('sl').value+'&i='+i).then(r=>{
-      return r.text().then(t=>{document.getElementById('sres').innerText=t; return r.ok;});
-    });
-  }
-  function step(d){
-    scanning=false; document.getElementById('sa').innerText='Auto';
-    scan(parseInt(document.getElementById('si').value||0)+d);
-  }
-  function auto(){
-    scanning=!scanning;
-    document.getElementById('sa').innerText=scanning?'Stop':'Auto';
-    if(scanning) scan(parseInt(document.getElementById('si').value||0)).then(next);
-  }
-  function next(ok){
-    if(!ok){ scanning=false; document.getElementById('sa').innerText='Auto'; }
-    if(!scanning) return;
-    setTimeout(function(){
-      if(scanning) scan(parseInt(document.getElementById('si').value)+1).then(next);
-    },2000);
+  function save(){
+    get('/save?tv='+$('tv').value+'&ac='+$('ac').value,'sres');
   }
   function tst(){
-    var v=function(id){return encodeURIComponent(document.getElementById(id).value);};
-    get('/send?protocol='+v('pr')+'&code='+v('cd')+'&bits='+v('bt'));
+    var v=function(id){return encodeURIComponent($(id).value);};
+    get('/send?protocol='+v('pr')+'&code='+v('cd')+'&bits='+v('bt'),'xres');
   }
 </script>
 )html";
@@ -192,14 +234,22 @@ static void sendPage(String body){
 }
 
 static void showStartPage(void){
-  String body = FPSTR(INDEX_HTML);
+  sendPage(FPSTR(INDEX_HTML));
+}
+
+static void showSettings(void){
+  String body = "<script>var tvCur=" + String(IR_getTvCode()) + ",acCur='" + IR_getAcProtocol() + "';</script>";
+  body += FPSTR(SETTINGS_HTML);
   body += "<p>" + WIFIC_getStatus() + "<br>" + OTA_getStatus() + "</p>";
   sendPage(body);
 }
 
-static void power(void){
-  IR_sendPower();
-  webServer.send(200, "text/plain", "OK");
+static void tvCommand(void){
+  if(IR_sendTv(webServer.arg("cmd"))){
+    webServer.send(200, "text/plain", "OK");
+  }else{
+    webServer.send(400, "text/plain", "Unknown command. Use power, volume_up, volume_down or mute.");
+  }
 }
 
 static void sendCode(void){
@@ -224,21 +274,40 @@ static void checkUpdate(void){
 }
 
 static void scanCode(void){
-  uint8_t l = webServer.arg("l").toInt();
   uint16_t i = webServer.arg("i").toInt();
-  if(i >= IR_scanCount(l)){
+  if(i >= IR_tvCodeCount()){
     webServer.send(400, "text/plain", "End of list");
     return;
   }
-  webServer.send(200, "text/plain", IR_scanSend(l, i));
+  webServer.send(200, "text/plain", String(i) + ": " + IR_tvCodeSend(i));
 }
 
-static void scanLists(void){
-  webServer.send(200, "text/plain", IR_scanLists());
+/* List is too long for one String, so it is sent in chunks. */
+static void tvCodes(void){
+  webServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+  webServer.send(200, "text/plain", "");
+  String chunk = "";
+  for(uint16_t i = 0; i < IR_tvCodeCount(); i++){
+    chunk += IR_tvCodeDesc(i) + "\n";
+    if(chunk.length() > 1000){
+      webServer.sendContent(chunk);
+      chunk = "";
+    }
+  }
+  if(chunk.length() > 0) webServer.sendContent(chunk);
+  webServer.sendContent("");  // Empty chunk ends the response.
+}
+
+static void saveSettings(void){
+  if(IR_saveSettings(webServer.arg("tv").toInt(), webServer.arg("ac"))){
+    webServer.send(200, "text/plain", "Saved.");
+  }else{
+    webServer.send(400, "text/plain", "Invalid TV code or AC protocol.");
+  }
 }
 
 static void airCon(void){
-  String protocol = webServer.hasArg("protocol") ? webServer.arg("protocol") : AC_PROTOCOL;
+  String protocol = webServer.hasArg("protocol") ? webServer.arg("protocol") : IR_getAcProtocol();
   if(IR_sendAc(protocol, webServer.arg("power").toInt(), webServer.arg("mode"),
                webServer.arg("temp").toInt(), webServer.arg("fan"))){
     webServer.send(200, "text/plain", "OK");
@@ -297,10 +366,12 @@ void HTTP_SERVER_process(void){
 void HTTP_SERVER_init(void){
   webServer.on("/", showStartPage);
   webServer.on("/favicon.ico", showNotFound);
-  webServer.on("/power", power);
+  webServer.on("/settings", showSettings);
+  webServer.on("/tv", tvCommand);
   webServer.on("/send", sendCode);
   webServer.on("/scan", scanCode);
-  webServer.on("/scanlists", scanLists);
+  webServer.on("/tvcodes", tvCodes);
+  webServer.on("/save", saveSettings);
   webServer.on("/ac", airCon);
   webServer.on("/acprotocols", acProtocols);
   webServer.on("/update", checkUpdate);

@@ -4,12 +4,15 @@
 #include <Arduino.h>
 
 extern void IR_init(void);
-extern void IR_sendPower(void);
+extern bool IR_sendTv(String cmd);
 extern bool IR_send(String protocol, uint64_t code, uint16_t bits, uint16_t repeat);
-extern String IR_scanLists(void);
-extern uint16_t IR_scanCount(uint8_t list);
-extern String IR_scanSend(uint8_t list, uint16_t index);
+extern uint16_t IR_tvCodeCount(void);
+extern String IR_tvCodeDesc(uint16_t index);
+extern String IR_tvCodeSend(uint16_t index);
+extern uint16_t IR_getTvCode(void);
 extern String IR_acProtocols(void);
+extern String IR_getAcProtocol(void);
+extern bool IR_saveSettings(uint16_t tvCode, String acProtocol);
 extern bool IR_sendAc(String protocol, bool power, String mode, uint8_t temp, String fan);
 
 #endif
