@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        2
+#define FIRMWARE_VERSION        4
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
@@ -27,6 +27,9 @@
 #define TV_POWER_PROTOCOL       "RC5"
 #define TV_POWER_CODE           0x04C
 #define TV_POWER_BITS           12
+
+/* AC protocol used by /ac when no protocol parameter is given. Find it using the AC scan on the main page. */
+#define AC_PROTOCOL             "MIDEA"
 
 #define WIFI_PASS_EEPROM_ADDR   (0)
 #define WIFI_PASS_SIZE          (64)  // WPA2 passphrase up to 63 chars + terminator

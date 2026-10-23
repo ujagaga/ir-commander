@@ -6,8 +6,10 @@
  *
  *  GET /power                                          - send TV power code
  *  GET /update                                         - check GitHub for newer firmware now
- *  GET /scan?i=N                                      - send code N from the universal TV power list
- *  GET /ac?power=1&mode=0&temp=24&fan=0                 - Midea AC (mode 0 cool,1 dry,2 auto,3 heat,4 fan; fan 0 auto,1 low,2 med,3 high)
+ *  GET /scan?l=L&i=N                                  - send code N from scan list L (see /scanlists)
+ *  GET /scanlists                                      - scan list titles, '|' separated
+ *  GET /ac?power=1&mode=cool&temp=24&fan=auto[&protocol=MIDEA] - AC (mode cool,heat,auto,dry,fan; fan auto,low,medium,high)
+ *  GET /acprotocols                                    - supported AC protocols, '|' separated
  *  GET /send?protocol=NEC&code=0x20DF10EF[&bits=32][&repeat=0] - send any code (for finding the right one)
  */
 
@@ -45,16 +47,21 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   <p id='res'></p>
   <hr>
   <h3>Air conditioner</h3>
-  <select id='am'><option value='0'>Cool</option><option value='3'>Heat</option><option value='2'>Auto</option><option value='1'>Dry</option><option value='4'>Fan</option></select>
+  <select id='ap'></select>
+  <select id='am'><option value='cool'>Cool</option><option value='heat'>Heat</option><option value='auto'>Auto</option><option value='dry'>Dry</option><option value='fan'>Fan</option></select>
   <select id='at'></select>
-  <select id='af'><option value='0'>Fan auto</option><option value='1'>Low</option><option value='2'>Medium</option><option value='3'>High</option></select><br><br>
+  <select id='af'><option value='auto'>Fan auto</option><option value='low'>Low</option><option value='medium'>Medium</option><option value='high'>High</option></select><br><br>
   <div style="display:flex;gap:4px">
     <button type="button" onclick="ac(1)">AC on</button>
     <button type="button" onclick="ac(0)">AC off</button>
+    <button type="button" id="aa" onclick="acAuto()">Scan</button>
   </div>
+  <p>Scan: with the AC running, sends "off" in the next protocol every 3s. Stop when the AC turns off.</p>
+  <p id='ares'></p>
   <hr>
-  <h3>Find TV power code</h3>
-  <p>Auto sends the next code every 2s. Stop when the TV reacts, then use Prev/Again to confirm.</p>
+  <h3>Find code</h3>
+  <p>Auto sends the next code every 2s. Stop when the device reacts, then use Prev/Again to confirm.</p>
+  <select id='sl' onchange="document.getElementById('si').value=0"></select>
   <input id='si' value='0' placeholder='code index'><br><br>
   <div style="display:flex;gap:4px">
     <button type="button" id="sa" onclick="auto()">Auto</button>
@@ -87,15 +94,38 @@ static const char INDEX_HTML[] PROGMEM = R"html(
     fetch('/power').then(r=>r.text()).then(t=>{document.getElementById('res').innerText=t+' x'+(++n);}).finally(rep);
   }
   for(var t=17;t<=30;t++){ document.getElementById('at').innerHTML+='<option'+(t==24?' selected':'')+'>'+t+'</option>'; }
+  fetch('/acprotocols').then(r=>r.text()).then(t=>{
+    t.split('|').forEach(function(p){ document.getElementById('ap').innerHTML+='<option'+(p==')html" AC_PROTOCOL R"html('?' selected':'')+'>'+p+'</option>'; });
+  });
   function ac(p){
     var v=function(id){return document.getElementById(id).value;};
-    get('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af'));
+    return fetch('/ac?protocol='+v('ap')+'&power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af')).then(r=>r.text()).then(t=>{
+      var s=document.getElementById('ap'); document.getElementById('ares').innerText=s.selectedIndex+'/'+(s.length-1)+': '+s.value+' '+t;
+    });
   }
+  var acScanning=false;
+  function acAuto(){
+    acScanning=!acScanning;
+    document.getElementById('aa').innerText=acScanning?'Stop':'Scan';
+    if(acScanning) ac(0).then(acNext);
+  }
+  function acNext(){
+    setTimeout(function(){
+      var s=document.getElementById('ap');
+      if(!acScanning) return;
+      if(s.selectedIndex>=s.length-1){ acAuto(); return; }
+      s.selectedIndex++;
+      ac(0).then(acNext);
+    },3000);
+  }
+  fetch('/scanlists').then(r=>r.text()).then(t=>{
+    t.split('|').forEach(function(n,i){ document.getElementById('sl').innerHTML+='<option value='+i+'>'+n+'</option>'; });
+  });
   var scanning=false;
   function scan(i){
     if(i<0) i=0;
     document.getElementById('si').value=i;
-    return fetch('/scan?i='+i).then(r=>{
+    return fetch('/scan?l='+document.getElementById('sl').value+'&i='+i).then(r=>{
       return r.text().then(t=>{document.getElementById('sres').innerText=t; return r.ok;});
     });
   }
@@ -194,18 +224,31 @@ static void checkUpdate(void){
 }
 
 static void scanCode(void){
+  uint8_t l = webServer.arg("l").toInt();
   uint16_t i = webServer.arg("i").toInt();
-  if(i >= IR_scanCount()){
+  if(i >= IR_scanCount(l)){
     webServer.send(400, "text/plain", "End of list");
     return;
   }
-  webServer.send(200, "text/plain", IR_scanSend(i));
+  webServer.send(200, "text/plain", IR_scanSend(l, i));
+}
+
+static void scanLists(void){
+  webServer.send(200, "text/plain", IR_scanLists());
 }
 
 static void airCon(void){
-  IR_sendMideaAc(webServer.arg("power").toInt(), webServer.arg("mode").toInt(),
-                 webServer.arg("temp").toInt(), webServer.arg("fan").toInt());
-  webServer.send(200, "text/plain", "OK");
+  String protocol = webServer.hasArg("protocol") ? webServer.arg("protocol") : AC_PROTOCOL;
+  if(IR_sendAc(protocol, webServer.arg("power").toInt(), webServer.arg("mode"),
+               webServer.arg("temp").toInt(), webServer.arg("fan"))){
+    webServer.send(200, "text/plain", "OK");
+  }else{
+    webServer.send(400, "text/plain", "Unsupported AC protocol");
+  }
+}
+
+static void acProtocols(void){
+  webServer.send(200, "text/plain", IR_acProtocols());
 }
 
 static void showNotFound(void){
@@ -257,7 +300,9 @@ void HTTP_SERVER_init(void){
   webServer.on("/power", power);
   webServer.on("/send", sendCode);
   webServer.on("/scan", scanCode);
+  webServer.on("/scanlists", scanLists);
   webServer.on("/ac", airCon);
+  webServer.on("/acprotocols", acProtocols);
   webServer.on("/update", checkUpdate);
   webServer.on("/selectap", selectAP);
   webServer.on("/aplist", apList);
