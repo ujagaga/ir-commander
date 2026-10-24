@@ -63,6 +63,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
       <div class="row ac-actions"><button type="button" onclick="ac(1)">On / Apply</button><button type="button" onclick="ac(0)">Off</button></div>
     </section>
   </main>
+  <p id="res" class="status error" role="status" aria-live="polite" hidden></p>
 <script>
   var modeIcons={"cool": "/icons/cool-0da41409ccc3.svg", "heat": "/icons/heat-721f0eb2cafc.svg", "auto": "/icons/auto-f2e9892497ab.svg", "dry": "/icons/dry-8dff9712e689.svg", "fan": "/icons/fan-1354feac9110.svg"};
   function updateModeIcon(){
@@ -73,7 +74,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   document.getElementById('am').addEventListener('change',updateModeIcon);
   window.addEventListener('pageshow',updateModeIcon);
   updateModeIcon();
-  function show(t,error){var el=document.getElementById('res');if(!el)return;el.textContent=t;el.classList.toggle('error',!!error);}
+  function show(t,error){var el=document.getElementById('res');el.textContent=t;el.hidden=!error;}
   async function send(url,message){
     var controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
     try{var r=await fetch(url,{signal:controller.signal});var t=await r.text();if(!r.ok)throw new Error(t);show(message);return true;}
