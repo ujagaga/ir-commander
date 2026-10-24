@@ -77,7 +77,11 @@ restart after serial programming can hang otherwise.
    and save. The device restarts and joins your network.
 4. Open `http://ir-commander.local`, or the IP address your router assigned
    (shown on the Settings page and in the serial log). Some Android browsers
-   don't resolve `.local` names.
+   don't resolve `.local` names. WiFi power saving is disabled on the device
+   (about 70 mA instead of ~20 mA) because in sleep it misses the multicast
+   mDNS queries, which made `.local` lookups unreliable. On Linux computers
+   with WiFi power saving on, lookups can still fail; turn it off there too
+   (NetworkManager: `wifi.powersave = 2`) or add the device to `/etc/hosts`.
 
 Connection behaviour:
 

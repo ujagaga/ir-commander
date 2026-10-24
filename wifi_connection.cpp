@@ -147,6 +147,7 @@ static void stationMode(void){
   startSoftAP();
   WiFi.hostname(deviceHostname);
   WiFi.config(0U, 0U, 0U);  // This disables static config.
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);  // Modem sleep misses multicast, so mDNS queries go unanswered.
   WiFi.begin(st_ssid, st_pass);
 
   staConnecting = true;
@@ -159,6 +160,8 @@ static void onStationConnected(void){
   if(!mdnsStarted){
     mdnsStarted = MDNS.begin(deviceHostname);
     MDNS.addService("http", "tcp", 80);
+  }else{
+    MDNS.notifyAPChange();  // Re-announce hostname after reconnect.
   }
 }
 
@@ -265,6 +268,7 @@ void WIFIC_process(void) {
         Serial.println("No AP clients, switching to STA mode only.");
         WiFi.mode(WIFI_STA);
         apMode = false;
+        if(mdnsStarted) MDNS.notifyAPChange();
       }
     } else if ((strlen(st_ssid) > 0) && ((now - apModeAttempTime) > (AP_MODE_TIMEOUT_S * 1000ul))) {
       stationMode();
