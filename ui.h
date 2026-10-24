@@ -92,7 +92,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
     b.onpointerup=b.onpointercancel=b.onlostpointercapture=stop;
     b.onclick=function(e){if(e.detail===0&&!busy)send('/tv?cmd='+b.dataset.cmd,names[b.dataset.cmd]);};
     b.oncontextmenu=function(){return false;};
-  });ac does
+  });
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
   function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
   function acSet(m,t,f,on){document.getElementById('ac-on').hidden=!on;document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}
