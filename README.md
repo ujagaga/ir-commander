@@ -111,6 +111,12 @@ Controls stack on phones and sit side by side on larger screens.
 
 ### Settings
 
+- **Home page controls.** Choose **Show TV controls** and **Show AC controls**,
+  then press **Save home page controls**. The choices are saved in EEPROM for
+  all clients and applied the next time Home is opened or refreshed; no restart
+  is needed. Both are shown by default. Hidden controls remain available through
+  the HTTP API, and Settings stays accessible even when both are hidden.
+
 - **TV code.** Dropdown with 311 TV power codes from the Flipper Zero
   universal remote list. The saved one is selected.
   - **Scan** sends the next code every 2 s. Point the LED at the TV (TV on)
@@ -141,6 +147,8 @@ Control requests are plain GET, without authentication (meant for a trusted
 local network). Responses are `text/plain`. Hostname changes use
 `POST /hostname` with a form field named `hostname`; successful saves return
 an HTML reconnect page and restart the device.
+`POST /visibility` accepts form fields `tv` and `ac` (each `0` or `1`) to save
+Home visibility without restarting.
 
 | Request | Action |
 |---|---|

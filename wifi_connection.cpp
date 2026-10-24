@@ -23,21 +23,41 @@ static uint32_t staConnectStartTime = 0;
 static bool mdnsStarted = false;
 
 static char deviceHostname[HOSTNAME_SIZE] = HOSTNAME;
-static const uint32_t hostnameMarker = 0x484E3031;
+static const uint32_t hostnameMarker = 0x484E3031; // Original hostname layout.
+// Versioned marker also stores visibility bits: bit 0 = TV, bit 1 = AC.
+static const uint32_t visibilityMarker = 0x484E30A0;
+static uint8_t visibleControls = 3;
+
+uint8_t WIFIC_getVisibleControls(void){ return visibleControls; }
+
+bool WIFIC_saveVisibleControls(uint8_t controls){
+  if(controls > 3) return false;
+  EEPROM.begin(EEPROM_SIZE);
+  uint32_t marker = visibilityMarker | controls;
+  EEPROM.put(HOSTNAME_MARKER_ADDR, marker);
+  if(!EEPROM.commit()) return false;
+  visibleControls = controls;
+  return true;
+}
 
 /* Run before any module reads EEPROM: ESP_EEPROM does not migrate resized blocks. */
 bool WIFIC_initStorage(void){
   EEPROM.begin(EEPROM_SIZE);
   uint32_t marker = 0;
   EEPROM.get(HOSTNAME_MARKER_ADDR, marker);
-  if(marker == hostnameMarker) return true;
+  if((marker & 0xFFFFFFFCu) == visibilityMarker){
+    visibleControls = marker & 3;
+    return true;
+  }
+  if(marker == hostnameMarker) return WIFIC_saveVisibleControls(3);
 
   uint8_t legacy[EEPROM_LEGACY_SIZE];
   EEPROM.begin(EEPROM_LEGACY_SIZE);
   EEPROM.get(0, legacy);
   EEPROM.begin(EEPROM_SIZE);
   EEPROM.put(0, legacy);
-  EEPROM.put(HOSTNAME_MARKER_ADDR, hostnameMarker);
+  uint32_t newMarker = visibilityMarker | 3;
+  EEPROM.put(HOSTNAME_MARKER_ADDR, newMarker);
   for(unsigned int i = 0; i < HOSTNAME_SIZE; ++i) EEPROM.write(HOSTNAME_EEPROM_ADDR + i, 0);
   return EEPROM.commit();
 }

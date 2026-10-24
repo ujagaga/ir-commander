@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        10
+#define FIRMWARE_VERSION        11
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
@@ -46,7 +46,7 @@
 #define AC_PROTOCOL_SIZE        (1)   // decode_type_t as uint8_t
 /* Preserve the original 104-byte layout when migrating existing devices. */
 #define EEPROM_LEGACY_SIZE      (AC_PROTOCOL_EEPROM_ADDR + AC_PROTOCOL_SIZE)
-#define HOSTNAME_MARKER_ADDR    EEPROM_LEGACY_SIZE
+#define HOSTNAME_MARKER_ADDR    EEPROM_LEGACY_SIZE // Layout marker and home visibility flags
 #define HOSTNAME_EEPROM_ADDR    (HOSTNAME_MARKER_ADDR + 4)
 #define HOSTNAME_SIZE           (32) // 31 characters + terminator (ESP8266 hostname limit)
 #define EEPROM_SIZE             (HOSTNAME_EEPROM_ADDR + HOSTNAME_SIZE)

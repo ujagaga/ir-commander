@@ -4,6 +4,8 @@
 #include <Arduino.h>
 
 extern bool WIFIC_initStorage(void);
+extern uint8_t WIFIC_getVisibleControls(void);
+extern bool WIFIC_saveVisibleControls(uint8_t controls);
 extern String WIFIC_getHostname(void);
 extern bool WIFIC_validHostname(const String& name);
 extern bool WIFIC_saveHostname(String name);

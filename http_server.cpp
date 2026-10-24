@@ -41,6 +41,7 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
       .btn_pwr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:124px;height:124px;border-radius:50%;margin:22px auto 26px;background:#f8e7df;border:1px solid #efd4c7;color:#a0442e;font-size:14px}.btn_pwr svg{display:block;width:40px;height:44px;margin-bottom:6px;pointer-events:none}.btn_pwr:hover{background:#f0d6c9}.hold{user-select:none;-webkit-user-select:none;touch-action:none}.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}.volume button{height:64px}.volume .symbol{font-size:26px}.tv-hint{text-align:center;margin:18px 0 0}
       label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:14px 0 6px}input,select{font:inherit;width:100%;max-width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px}input{margin-bottom:8px}.temperature{display:flex;align-items:center;gap:12px;margin:20px 0}.temperature button{width:48px;flex-shrink:0;font-size:24px}.temperature div{flex:1;text-align:center}.temperature output{font-size:56px;letter-spacing:-3px;font-weight:600;line-height:1.2}.temperature .unit{font-size:23px;color:var(--muted);vertical-align:top}.temperature small{display:block;font-size:11px;color:var(--muted)}.ac-actions{margin-top:24px}
       .status{min-height:48px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:#e6edde;margin:20px 0 10px;font-size:13px;color:var(--ink)}.status.error{background:#fae7df;color:#933c28}.footnote{text-align:center;font-size:12px}hr{border:0;border-top:1px solid var(--line);margin:24px 0}a{color:var(--green)}[id$="res"]{overflow-wrap:anywhere}#vm a{display:inline-block;padding:10px 0}summary{cursor:pointer;font-weight:650}
+      .visibility-option{display:flex;align-items:center;gap:12px;font-size:16px;color:var(--ink);min-height:48px}.visibility-option input{width:22px;height:22px;min-height:0;margin:0;accent-color:var(--green)}
       @media(max-width:600px){.center_div{padding:20px 16px 32px}.devices{grid-template-columns:1fr}.card{padding:20px;border-radius:20px}.nav{margin:22px 0}h1{font-size:27px}.btn_pwr{margin:12px auto 20px;width:110px;height:110px}.temperature{margin:16px 0}.row button{padding:10px 8px}}
       @media(prefers-reduced-motion:reduce){button{transition:none}}
     </style>
@@ -113,6 +114,16 @@ static const char INDEX_HTML[] PROGMEM = R"html(
 )html";
 
 static const char SETTINGS_HTML[] PROGMEM = R"html(
+  <section class="card">
+    <h3>Home page controls</h3>
+    <form id="visibility-form">
+      <label class="visibility-option"><input type="checkbox" id="show-tv">Show TV controls</label>
+      <label class="visibility-option"><input type="checkbox" id="show-ac">Show AC controls</label>
+      <p>Choose which controls appear on Home for everyone using this device.</p>
+      <button class="primary" type="submit">Save home page controls</button>
+      <p id="visibility-result" role="status" aria-live="polite"></p>
+    </form>
+  </section>
   <section class="card"><h3><label for="tv">TV power code</label></h3>
   <select id='tv'><option>Loading...</option></select><br><br>
   <div class="row">
@@ -158,6 +169,17 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
 <script>
   function $(id){ return document.getElementById(id); }
   $('hostname').value=hostCur;
+  $('show-tv').checked=!!(visibleControls & 1);
+  $('show-ac').checked=!!(visibleControls & 2);
+  $('visibility-form').onsubmit=async function(e){
+    e.preventDefault();
+    var button=this.querySelector('button');button.disabled=true;
+    try{
+      var r=await fetch('/visibility',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tv='+($('show-tv').checked?'1':'0')+'&ac='+($('show-ac').checked?'1':'0')});
+      var t=await r.text();$('visibility-result').textContent=r.ok?'Saved. Open Home to see your controls.':t;
+    }catch(e){$('visibility-result').textContent='Could not save. Check your connection and try again.';}
+    finally{button.disabled=false;}
+  };
   function get(url,out){
     return fetch(url).then(r=>r.text().then(t=>{ $(out).innerText=t; return r.ok; })).catch(()=>{$(out).innerText='Connection failed. Please try again.';return false;});
   }
@@ -265,12 +287,22 @@ static void sendPage(String body){
 }
 
 static void showStartPage(void){
-  sendPage(FPSTR(INDEX_HTML));
+  uint8_t controls = WIFIC_getVisibleControls();
+  String body = "<style>";
+  if(!(controls & 1)) body += "[aria-labelledby='tv-title']{display:none}";
+  if(!(controls & 2)) body += "[aria-labelledby='ac-title']{display:none}";
+  if(controls != 3) body += ".devices{grid-template-columns:1fr}";
+  if(controls == 0) body += "#res,.footnote{display:none}";
+  body += "</style>";
+  if(controls == 0) body += "<section class='card'><h2>No controls selected</h2><p>Choose the controls you want to see in <a href='/settings'>Settings</a>.</p></section>";
+  body += FPSTR(INDEX_HTML);
+  sendPage(body);
 }
 
 static void showSettings(void){
   String body = "<script>var tvCur=" + String(IR_getTvCode()) + ",acCur='" + IR_getAcProtocol() + "';</script>";
   body += "<script>var hostCur='" + WIFIC_getHostname() + "';</script>";
+  body += "<script>var visibleControls=" + String(WIFIC_getVisibleControls()) + ";</script>";
   body += FPSTR(SETTINGS_HTML);
   body += "<p>" + WIFIC_getStatus() + "<br>" + OTA_getStatus() + "</p></section>";
   sendPage(body);
@@ -391,6 +423,20 @@ static void saveWiFi(void){
   ESP.restart();
 }
 
+static void saveVisibility(void){
+  String tv = webServer.arg("tv"), ac = webServer.arg("ac");
+  if((tv != "0" && tv != "1") || (ac != "0" && ac != "1")){
+    webServer.send(400, "text/plain", "TV and AC visibility must each be 0 or 1.");
+    return;
+  }
+  uint8_t controls = (tv == "1" ? 1 : 0) | (ac == "1" ? 2 : 0);
+  if(!WIFIC_saveVisibleControls(controls)){
+    webServer.send(500, "text/plain", "Could not save visibility. Please try again.");
+    return;
+  }
+  webServer.send(200, "text/plain", "Saved.");
+}
+
 static void saveHostname(void){
   if(!webServer.hasArg("hostname")){
     webServer.send(400, "text/plain", "Missing hostname.");
@@ -422,6 +468,7 @@ void HTTP_SERVER_init(void){
   webServer.on("/favicon.ico", showNotFound);
   webServer.on("/settings", showSettings);
   webServer.on("/hostname", HTTP_POST, saveHostname);
+  webServer.on("/visibility", HTTP_POST, saveVisibility);
   webServer.on("/tv", tvCommand);
   webServer.on("/send", sendCode);
   webServer.on("/scan", scanCode);
