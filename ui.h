@@ -73,7 +73,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   document.getElementById('am').addEventListener('change',updateModeIcon);
   window.addEventListener('pageshow',updateModeIcon);
   updateModeIcon();
-  function show(t,error){var el=document.getElementById('res');el.textContent=t;el.classList.toggle('error',!!error);}
+  function show(t,error){var el=document.getElementById('res');if(!el)return;el.textContent=t;el.classList.toggle('error',!!error);}
   async function send(url,message){
     var controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
     try{var r=await fetch(url,{signal:controller.signal});var t=await r.text();if(!r.ok)throw new Error(t);show(message);return true;}
