@@ -94,7 +94,16 @@ empty SSID switches to access point only mode.
 
 The mobile-friendly interface switches between **Home** and **Settings**. All
 styles and scripts are served by the device, with no external dependencies.
-Controls stack on phones and sit side by side on larger screens.
+Controls stack on phones and sit side by side on larger screens. HTML is streamed from
+flash in small chunks. SVG icons load separately from content-versioned
+`/icons/` URLs and are cached by the browser. Only the selected AC mode's icon
+is requested; changing mode updates its image URL. HTML is not cached, so saved
+settings and new icon URLs are picked up when the page is reloaded.
+
+Icon assets and their routes live in `ui.h`. When changing an SVG, update
+its URL hash to the first 12 characters of its SHA-256 digest and update the
+references in `ui.h`. Run `python3 tests/check_web_icons.py` to verify
+asset hashes, SVG validity, and page references.
 
 ### Home
 
@@ -219,7 +228,8 @@ TV code index. Re-select the TV code on the Settings page afterwards.
 | `config.h` | Pins, defaults, version, OTA source, EEPROM layout |
 | `ir_control.cpp/.h` | IR sending: TV codes, AC protocols, multi-pin LED drive, stored settings |
 | `ir_codes.h` | Generated TV power code list |
-| `http_server.cpp/.h` | Web pages and HTTP API |
+| `http_server.cpp/.h` | HTTP API, routing and page streaming |
+| `ui.h` | Static HTML, CSS, JavaScript, page fragments and SVG assets |
 | `wifi_connection.cpp/.h` | WiFi station/access point handling, mDNS |
 | `ota.cpp/.h` | Firmware update from GitHub |
 | `firmware_version.cpp/.h` | Parses `FIRMWARE_VERSION` from the downloaded `config.h` |

@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        12
+#define FIRMWARE_VERSION        13
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
