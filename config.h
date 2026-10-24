@@ -3,14 +3,14 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        8
+#define FIRMWARE_VERSION        9
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
 
 #define PASSWORD                "ircommander"   // Config AP password (min 8 chars)
 #define AP_NAME_PREFIX          "IR_Commander_" // Will be appended by device MAC
-#define HOSTNAME                "ir-tv"  // http://ir-commander.local
+#define HOSTNAME                "ir-tv"  // Default hostname until changed in Settings
 
 #define AP_MODE_TIMEOUT_S       120 // While in AP only mode, retry STA connection after this period.
 #define STA_CONNECT_TIMEOUT_S   30  // If STA does not connect within this period, fall back to AP only and retry after AP_MODE_TIMEOUT_S.
@@ -44,7 +44,11 @@
 #define TV_CODE_SIZE            (2)   // uint16_t index into TV power list
 #define AC_PROTOCOL_EEPROM_ADDR (TV_CODE_EEPROM_ADDR + TV_CODE_SIZE)
 #define AC_PROTOCOL_SIZE        (1)   // decode_type_t as uint8_t
-/* Library rounds the size up to 4 bytes, so 104 keeps the same layout as before these settings (WiFi survives). */
-#define EEPROM_SIZE             (WIFI_PASS_SIZE + SSID_SIZE + OTA_TARGET_SIZE + TV_CODE_SIZE + AC_PROTOCOL_SIZE)
+/* Preserve the original 104-byte layout when migrating existing devices. */
+#define EEPROM_LEGACY_SIZE      (AC_PROTOCOL_EEPROM_ADDR + AC_PROTOCOL_SIZE)
+#define HOSTNAME_MARKER_ADDR    EEPROM_LEGACY_SIZE
+#define HOSTNAME_EEPROM_ADDR    (HOSTNAME_MARKER_ADDR + 4)
+#define HOSTNAME_SIZE           (32) // 31 characters + terminator (ESP8266 hostname limit)
+#define EEPROM_SIZE             (HOSTNAME_EEPROM_ADDR + HOSTNAME_SIZE)
 
 #endif

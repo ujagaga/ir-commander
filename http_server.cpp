@@ -34,7 +34,7 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
       :root{color-scheme:light;--ink:#152923;--muted:#60716a;--line:#dce4dc;--green:#236349;--paper:#fffefa}
       *{box-sizing:border-box}body{margin:0;background:#eff2eb;color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}
       .center_div{max-width:860px;margin:auto;padding:32px 24px 48px}.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:750;letter-spacing:-.5px}.brand-mark{display:grid;place-items:center;background:var(--ink);color:#e6f1b5;border-radius:13px;width:42px;height:42px;font-size:24px}.brand small{display:block;font-size:11px;letter-spacing:1.8px;color:var(--muted);font-weight:600;text-transform:uppercase}
-      .nav{display:flex;gap:6px;background:#e2e8df;padding:5px;border-radius:14px;margin:26px 0 30px}.nav a{flex:1;text-align:center;padding:10px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:650}.nav a[aria-current]{background:var(--paper);color:var(--ink);box-shadow:0 2px 5px #1529230a}
+      .nav{display:flex;gap:6px;background:#e2e8df;padding:5px;border-radius:14px;margin:26px 0 30px}.nav svg{width:24px;height:24px;display:block}.nav a{display:flex;align-items:center;justify-content:center;min-height:48px;flex:1;text-align:center;padding:10px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:650}.nav a[aria-current]{background:var(--paper);color:var(--ink);box-shadow:0 2px 5px #1529230a}
       h1{font-size:30px;line-height:1.2;letter-spacing:-1px;margin:0 0 8px}h3 label{font:inherit;color:inherit;margin:0}h2,h3{font-size:20px;letter-spacing:-.5px;margin:0 0 18px}p{color:var(--muted);font-size:14px} .intro{margin:0 0 26px}.eyebrow{font-size:11px;letter-spacing:1.6px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
       .devices{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px}.devices .card{margin:0}.card-head{display:flex;align-items:center;justify-content:space-between}.device-icon{color:var(--green);font-size:25px}.hint{font-size:12px;color:var(--muted)}
       button{font:inherit;font-weight:650;cursor:pointer;min-height:48px;width:100%;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#edf1e9;padding:10px 12px;touch-action:manipulation;transition:background .15s,transform .15s}button:hover{background:#e1e8dc}button:active,.hold.pressed{transform:scale(.97);background:#d4dfce}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--green);color:white;border-color:var(--green)}button.primary:hover{background:#194e38}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #b17a21;outline-offset:3px}
@@ -46,8 +46,8 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
     </style>
   </head>
   <body><div class="contain"><div class="center_div">
-  <header class="brand"><span class="brand-mark" aria-hidden="true">&#x2301;</span><div>IR Commander<small>Your home, at hand</small></div></header>
-  <nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/settings">Settings</a></nav>
+  <header class="brand"><span class="brand-mark" aria-hidden="true">&#x2301;</span><div>IR Commander</div></header>
+  <nav class="nav" aria-label="Main navigation"><a href="/" aria-label="Home" title="Home"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. --><path fill="currentColor" d="M277.8 8.6c-12.3-11.4-31.3-11.4-43.5 0l-224 208c-9.6 9-12.8 22.9-8 35.1S18.8 272 32 272l16 0 0 176c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-176 16 0c13.2 0 25-8.1 29.8-20.3s1.6-26.2-8-35.1l-224-208zM240 320l32 0c26.5 0 48 21.5 48 48l0 96-128 0 0-96c0-26.5 21.5-48 48-48z"/></svg></a><a href="/settings" aria-label="Settings" title="Settings"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="-16 -16 544 544"><!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. --><path fill="currentColor" d="M195.1 9.5C198.1-5.3 211.2-16 226.4-16l59.8 0c15.2 0 28.3 10.7 31.3 25.5L332 79.5c14.1 6 27.3 13.7 39.3 22.8l67.8-22.5c14.4-4.8 30.2 1.2 37.8 14.4l29.9 51.8c7.6 13.2 4.9 29.8-6.5 39.9L447 233.3c.9 7.4 1.3 15 1.3 22.7s-.5 15.3-1.3 22.7l53.4 47.5c11.4 10.1 14 26.8 6.5 39.9l-29.9 51.8c-7.6 13.1-23.4 19.2-37.8 14.4l-67.8-22.5c-12.1 9.1-25.3 16.7-39.3 22.8l-14.4 69.9c-3.1 14.9-16.2 25.5-31.3 25.5l-59.8 0c-15.2 0-28.3-10.7-31.3-25.5l-14.4-69.9c-14.1-6-27.2-13.7-39.3-22.8L73.5 432.3c-14.4 4.8-30.2-1.2-37.8-14.4L5.8 366.1c-7.6-13.2-4.9-29.8 6.5-39.9l53.4-47.5c-.9-7.4-1.3-15-1.3-22.7s.5-15.3 1.3-22.7L12.3 185.8c-11.4-10.1-14-26.8-6.5-39.9L35.7 94.1c7.6-13.2 23.4-19.2 37.8-14.4l67.8 22.5c12.1-9.1 25.3-16.7 39.3-22.8L195.1 9.5zM256.3 336a80 80 0 1 0 -.6-160 80 80 0 1 0 .6 160z"/></svg></a></nav>
   <script>document.querySelectorAll('.nav a').forEach(function(a){if(a.getAttribute('href')===(location.pathname==='/'?'/':'/settings'))a.setAttribute('aria-current','page');});</script>
 )html";
 
@@ -115,7 +115,6 @@ static const char INDEX_HTML[] PROGMEM = R"html(
 )html";
 
 static const char SETTINGS_HTML[] PROGMEM = R"html(
-  <h1>Make it yours.</h1><p class="intro">Pair your remotes and manage your connection.</p>
   <section class="card"><h3><label for="tv">TV power code</label></h3>
   <select id='tv'><option>Loading...</option></select><br><br>
   <div class="row">
@@ -148,12 +147,19 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
   <p id='xres'></p>
   </details><section class="card">
   <h3>System</h3>
+  <form action="/hostname" method="post">
+    <label for="hostname">Hostname</label>
+    <input id="hostname" name="hostname" maxlength="31" pattern="[A-Za-z0-9]([A-Za-z0-9-]{0,29}[A-Za-z0-9])?" autocapitalize="none" spellcheck="false" aria-describedby="hostname-help">
+    <p id="hostname-help">Use letters, numbers and hyphens, without .local. Leave blank to restore the default. Saving restarts the device.</p>
+    <button class="primary" type="submit">Save hostname and restart</button>
+  </form><hr>
   <div class="row">
     <button type="button" onclick="location.href='/selectap';">Configure WiFi</button>
     <button type="button" onclick="get('/update','sres')">Check for update</button>
   </div>
 <script>
   function $(id){ return document.getElementById(id); }
+  $('hostname').value=hostCur;
   function get(url,out){
     return fetch(url).then(r=>r.text().then(t=>{ $(out).innerText=t; return r.ok; })).catch(()=>{$(out).innerText='Connection failed. Please try again.';return false;});
   }
@@ -266,6 +272,7 @@ static void showStartPage(void){
 
 static void showSettings(void){
   String body = "<script>var tvCur=" + String(IR_getTvCode()) + ",acCur='" + IR_getAcProtocol() + "';</script>";
+  body += "<script>var hostCur='" + WIFIC_getHostname() + "';</script>";
   body += FPSTR(SETTINGS_HTML);
   body += "<p>" + WIFIC_getStatus() + "<br>" + OTA_getStatus() + "</p></section>";
   sendPage(body);
@@ -374,7 +381,7 @@ static void saveWiFi(void){
   String msg;
   if(ssid.length() > 0){
     msg = "Saving settings and connecting to SSID: " + ssid;
-    msg += "<br>Then open <a href='http://" HOSTNAME ".local'>http://" HOSTNAME ".local</a> or the IP your router assigned.";
+    msg += "<br>Then open <a href='http://" + WIFIC_getHostname() + ".local'>http://" + WIFIC_getHostname() + ".local</a> or the IP your router assigned.";
   }else{
     msg = "Saving settings and switching to AP mode only.";
   }
@@ -382,6 +389,28 @@ static void saveWiFi(void){
 
   /* Let the response go out, then restart to apply.
    Note: ESP.restart may hang the first time after serial programming. Reset once manually after programming. */
+  delay(1000);
+  ESP.restart();
+}
+
+static void saveHostname(void){
+  if(!webServer.hasArg("hostname")){
+    webServer.send(400, "text/plain", "Missing hostname.");
+    return;
+  }
+  String name = webServer.arg("hostname");
+  name.trim();
+  name.toLowerCase();
+  if(!name.isEmpty() && !WIFIC_validHostname(name)){
+    sendPage("<h1>Invalid hostname</h1><p>Use 1–31 letters, numbers or hyphens. Start and end with a letter or number.</p><a href='/settings'>Back to Settings</a>");
+    return;
+  }
+  if(!WIFIC_saveHostname(name)){
+    webServer.send(500, "text/plain", "Could not save hostname. Please try again.");
+    return;
+  }
+  if(name.isEmpty()) name = HOSTNAME;
+  sendPage("<h1>Hostname saved</h1><p>Restarting. Reconnect at <a href='http://" + name + ".local'>http://" + name + ".local</a>, or use the device IP address.</p>");
   delay(1000);
   ESP.restart();
 }
@@ -394,6 +423,7 @@ void HTTP_SERVER_init(void){
   webServer.on("/", showStartPage);
   webServer.on("/favicon.ico", showNotFound);
   webServer.on("/settings", showSettings);
+  webServer.on("/hostname", HTTP_POST, saveHostname);
   webServer.on("/tv", tvCommand);
   webServer.on("/send", sendCode);
   webServer.on("/scan", scanCode);

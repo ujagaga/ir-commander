@@ -22,6 +22,47 @@ static bool staConnecting = false;
 static uint32_t staConnectStartTime = 0;
 static bool mdnsStarted = false;
 
+static char deviceHostname[HOSTNAME_SIZE] = HOSTNAME;
+static const uint32_t hostnameMarker = 0x484E3031;
+
+/* Run before any module reads EEPROM: ESP_EEPROM does not migrate resized blocks. */
+bool WIFIC_initStorage(void){
+  EEPROM.begin(EEPROM_SIZE);
+  uint32_t marker = 0;
+  EEPROM.get(HOSTNAME_MARKER_ADDR, marker);
+  if(marker == hostnameMarker) return true;
+
+  uint8_t legacy[EEPROM_LEGACY_SIZE];
+  EEPROM.begin(EEPROM_LEGACY_SIZE);
+  EEPROM.get(0, legacy);
+  EEPROM.begin(EEPROM_SIZE);
+  EEPROM.put(0, legacy);
+  EEPROM.put(HOSTNAME_MARKER_ADDR, hostnameMarker);
+  for(unsigned int i = 0; i < HOSTNAME_SIZE; ++i) EEPROM.write(HOSTNAME_EEPROM_ADDR + i, 0);
+  return EEPROM.commit();
+}
+
+bool WIFIC_validHostname(const String& name){
+  if(name.length() == 0 || name.length() >= HOSTNAME_SIZE) return false;
+  for(unsigned int i = 0; i < name.length(); ++i){
+    char c = name[i];
+    bool alnum = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
+    if(!alnum && (c != '-' || i == 0 || i == name.length() - 1)) return false;
+  }
+  return true;
+}
+
+String WIFIC_getHostname(void){ return String(deviceHostname); }
+
+bool WIFIC_saveHostname(String name){
+  if(!name.isEmpty() && !WIFIC_validHostname(name)) return false;
+  char saved[HOSTNAME_SIZE] = {0};
+  name.toCharArray(saved, sizeof(saved));
+  EEPROM.begin(EEPROM_SIZE);
+  EEPROM.put(HOSTNAME_EEPROM_ADDR, saved);
+  return EEPROM.commit();
+}
+
 /* Returns wifi scan results */
 String WIFIC_getApList(void){
   String result = "";
@@ -43,7 +84,7 @@ String WIFIC_getStatus(void){
     result += "AP: " + String(myApName) + " (" + apIP.toString() + ")<br>";
   }
   if(WiFi.status() == WL_CONNECTED){
-    result += "Connected to " + String(st_ssid) + " as " + WiFi.localIP().toString() + " / " HOSTNAME ".local";
+    result += "Connected to " + String(st_ssid) + " as " + WiFi.localIP().toString() + " / " + String(deviceHostname) + ".local";
   }else if(strlen(st_ssid) > 0){
     result += "Not connected to " + String(st_ssid);
   }else{
@@ -84,7 +125,7 @@ static void stationMode(void){
   WiFi.setAutoReconnect(true);
   WiFi.mode(WIFI_AP_STA);
   startSoftAP();
-  WiFi.hostname(HOSTNAME);
+  WiFi.hostname(deviceHostname);
   WiFi.config(0U, 0U, 0U);  // This disables static config.
   WiFi.begin(st_ssid, st_pass);
 
@@ -96,7 +137,7 @@ static void onStationConnected(void){
   Serial.printf("Connected. IP address: %s\n", WiFi.localIP().toString().c_str());
 
   if(!mdnsStarted){
-    mdnsStarted = MDNS.begin(HOSTNAME);
+    mdnsStarted = MDNS.begin(deviceHostname);
     MDNS.addService("http", "tcp", 80);
   }
 }
@@ -142,6 +183,11 @@ void WIFIC_init(void){
   ESP.wdtFeed();
    /* Read settings from EEPROM */
   EEPROM.begin(EEPROM_SIZE);
+  char savedHostname[HOSTNAME_SIZE] = {0};
+  EEPROM.get(HOSTNAME_EEPROM_ADDR, savedHostname);
+  if(savedHostname[HOSTNAME_SIZE - 1] == 0 && WIFIC_validHostname(String(savedHostname))){
+    memcpy(deviceHostname, savedHostname, sizeof(deviceHostname));
+  }
   uint16_t i = 0;
 
   do{

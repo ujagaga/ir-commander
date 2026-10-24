@@ -128,11 +128,19 @@ Controls stack on phones and sit side by side on larger screens.
   optional bit count).
 - **System**: WiFi configuration, manual firmware update check, connection and
   firmware status.
+- **Hostname** (under System): enter a name such as `living-room`, then press
+  **Save hostname and restart**. After restart, open `http://living-room.local`
+  or the device IP. Use 1–31 letters, numbers or hyphens, starting and ending
+  with a letter or number. Names are saved in lowercase in EEPROM; leave the
+  field blank to restore `HOSTNAME` from `config.h`. Existing WiFi credentials
+  and TV/AC settings are preserved when upgrading to this EEPROM layout.
 
 ## HTTP API
 
-All requests are plain GET, without authentication (meant for a trusted local
-network). Responses are `text/plain`.
+Control requests are plain GET, without authentication (meant for a trusted
+local network). Responses are `text/plain`. Hostname changes use
+`POST /hostname` with a form field named `hostname`; successful saves return
+an HTML reconnect page and restart the device.
 
 | Request | Action |
 |---|---|

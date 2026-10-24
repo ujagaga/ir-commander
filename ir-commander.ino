@@ -15,6 +15,10 @@ void setup(void) {
   delay(100);
   Serial.begin(115200);
 
+  while(!WIFIC_initStorage()){
+    Serial.println("EEPROM migration failed; retrying before loading settings.");
+    delay(1000);
+  }
   IR_init();
   OTA_init();
   WIFIC_init();

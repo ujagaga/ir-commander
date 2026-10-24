@@ -3,6 +3,10 @@
 
 #include <Arduino.h>
 
+extern bool WIFIC_initStorage(void);
+extern String WIFIC_getHostname(void);
+extern bool WIFIC_validHostname(const String& name);
+extern bool WIFIC_saveHostname(String name);
 extern void WIFIC_init(void);
 extern void WIFIC_setStSSID(String new_ssid);
 extern void WIFIC_setStPass(String new_pass);
