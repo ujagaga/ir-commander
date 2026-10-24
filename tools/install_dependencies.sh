@@ -22,3 +22,5 @@ arduino-cli core install esp8266:esp8266
 # Install required libraries
 arduino-cli lib install "IRremoteESP8266"
 arduino-cli lib install "ESP_EEPROM"
+arduino-cli lib install "OneWire"
+arduino-cli lib install "DallasTemperature"

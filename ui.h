@@ -55,7 +55,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
       <div class="card-head"><div><h2 id="ac-title">Air conditioner</h2></div><span id="ac-mode-icon" class="device-icon" aria-hidden="true"><img src="/icons/cool-0da41409ccc3.svg" width="28" height="25" alt="" draggable="false"></span></div>
       <div class="temperature">
         <button type="button" id="less" onclick="temperature(-1)" aria-label="Decrease temperature">&minus;</button>
-        <div><span id="ac-on" class="ac-on" role="img" aria-label="AC on" hidden></span><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small></div>
+        <div><span id="ac-on" class="ac-on" role="img" aria-label="AC on" hidden></span><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small><small id="room" hidden></small></div>
         <button type="button" id="more" onclick="temperature(1)" aria-label="Increase temperature">+</button>
       </div>
       <div class="row"><div><label for="am">Mode</label><select id="am"><option value="cool">Cool</option><option value="heat">Heat</option><option value="auto">Auto</option><option value="dry">Dry</option><option value="fan">Fan only</option></select></div>
@@ -64,7 +64,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
     </section>
   </main>
   <p id="res" class="status" role="status" aria-live="polite">Ready when you are. Choose a control to send a command.</p>
-  <p class="footnote">Infrared sends commands; device power and room temperature aren’t reported back.</p>
+  <p class="footnote">Infrared sends commands; the AC doesn’t report its state back.</p>
 <script>
   var modeIcons={"cool": "/icons/cool-0da41409ccc3.svg", "heat": "/icons/heat-721f0eb2cafc.svg", "auto": "/icons/auto-f2e9892497ab.svg", "dry": "/icons/dry-8dff9712e689.svg", "fan": "/icons/fan-1354feac9110.svg"};
   function updateModeIcon(){
@@ -98,6 +98,8 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
   function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
   function acSet(m,t,f,on){document.getElementById('ac-on').hidden=!on;document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}
+  function room(t){var el=document.getElementById('room');el.textContent='Room '+(t||'–')+' °C';el.hidden=false;}
+  function roomStart(t){room(t);setInterval(function(){fetch('/temperature').then(r=>r.text()).then(room).catch(function(){});},30000);}
   async function ac(p){
     var v=function(id){return document.getElementById(id).value;};
     var buttons=document.querySelectorAll('.ac-actions button');buttons.forEach(b=>b.disabled=true);
@@ -289,6 +291,8 @@ static const char UI_QUOTE_COMMA[] PROGMEM = "',";
 static const char UI_COMMA_QUOTE[] PROGMEM = ",'";
 static const char UI_CALL_END[] PROGMEM = "',";
 static const char UI_SCRIPT_CALL_END[] PROGMEM = ");</script>";
+static const char UI_ROOM_START[] PROGMEM = "<script>roomStart('";
+static const char UI_CALL_END_QUOTE[] PROGMEM = "');</script>";
 static const char UI_HOST_STATE[] PROGMEM = "<script>var hostCur='";
 static const char UI_VISIBILITY_STATE[] PROGMEM = "<script>var visibleControls=";
 static const char UI_SCRIPT_END[] PROGMEM = ";</script>";

@@ -34,6 +34,19 @@ the firmware overrides `digitalWrite` for `IR_PIN_MAIN` and writes all IR pins
 with one register write (see `ir_control.cpp`). Pins are set in `config.h`
 (`IR_PINS`). Avoid D0, D3, D4 and D8.
 
+Optional DS18B20 room temperature sensor (AC device):
+
+| D1 mini pin | GPIO | Connection |
+|---|---|---|
+| D3 | 0 | DS18B20 data (middle leg); 4.7 kΩ to 3V3 recommended |
+| 3V3 | | DS18B20 VDD |
+| GND | | DS18B20 GND |
+
+The D1 mini already has a 10 kΩ pull-up on D3, which is enough for a short
+wire. The sensor keeps the line high at boot, so D3 (which must be high at
+boot) is safe. It is detected once at boot; without it the room temperature
+is not shown. The pin is `TEMP_PIN` in `config.h`.
+
 Notes:
 
 - Use a 940 nm IR LED if possible. An 850 nm LED (e.g. from a surveillance
@@ -49,7 +62,7 @@ Notes:
 ## Building and flashing
 
 Requires `arduino-cli` with the ESP8266 core 3.1.2. Install the core and
-libraries (IRremoteESP8266, ESP_EEPROM) with:
+libraries (IRremoteESP8266, ESP_EEPROM, OneWire, DallasTemperature) with:
 
 ```
 tools/install_dependencies.sh
@@ -123,7 +136,9 @@ asset hashes, SVG validity, and page references.
   speed are shown again when the page is reloaded (kept in RAM, reset to
   Cool / 24 °C / Auto on reboot). A spinning circle around the temperature
   shows that the last command sent was **Turn on / Apply**. Command feedback confirms sending, not the
-  actual device state; infrared does not report power or room temperature back.
+  actual device state; infrared does not report AC power back.
+  With a DS18B20 connected, the room temperature is shown under the target
+  temperature and refreshed every 30 s (dash until the first reading).
 
 ### Settings
 
@@ -180,6 +195,7 @@ Home visibility without restarting.
 | `/scan?i=235` | Send TV code number 235 from the list |
 | `/save?tv=235&ac=COOLIX` | Store TV code index and AC protocol |
 | `/send?protocol=NEC&code=0x20DF10EF&bits=32&repeat=0` | Send any code (`bits` and `repeat` optional) |
+| `/temperature` | Room temperature in °C, empty until the first reading; 404 without a DS18B20 |
 | `/update` | Check GitHub for a newer firmware now |
 
 `mode`: `cool`, `heat`, `auto`, `dry`, `fan`. `fan`: `auto`, `low`, `medium`,
@@ -238,6 +254,7 @@ TV code index. Re-select the TV code on the Settings page afterwards.
 | `http_server.cpp/.h` | HTTP API, routing and page streaming |
 | `ui.h` | Static HTML, CSS, JavaScript, page fragments and SVG assets |
 | `wifi_connection.cpp/.h` | WiFi station/access point handling, mDNS |
+| `temp_sensor.cpp/.h` | Optional DS18B20 room temperature |
 | `ota.cpp/.h` | Firmware update from GitHub |
 | `firmware_version.cpp/.h` | Parses `FIRMWARE_VERSION` from the downloaded `config.h` |
 | `tools/` | Build, upload, dependency install and code list generator scripts |

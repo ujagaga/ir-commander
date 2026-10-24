@@ -9,6 +9,7 @@
 #include "http_server.h"
 #include "ir_control.h"
 #include "ota.h"
+#include "temp_sensor.h"
 
 void setup(void) {
   /* Need to wait for background processes to complete. Otherwise trouble with gpio.*/
@@ -20,6 +21,7 @@ void setup(void) {
     delay(1000);
   }
   IR_init();
+  TEMP_init();
   OTA_init();
   WIFIC_init();
   HTTP_SERVER_init();
@@ -29,4 +31,5 @@ void loop(void) {
   HTTP_SERVER_process();
   WIFIC_process();
   OTA_process();
+  TEMP_process();
 }

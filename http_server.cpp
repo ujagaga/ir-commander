@@ -7,6 +7,7 @@
  *  GET /tv?cmd=power                                   - TV button: power (stored code), volume_up, volume_down, mute
  *  GET /ac?power=1&mode=cool&temp=24&fan=auto[&protocol=COOLIX] - AC (mode cool,heat,auto,dry,fan; fan auto,low,medium,high)
  *                                                        Without protocol the stored one is used.
+ *  GET /temperature                                    - room temperature in C ("" while unread), 404 without DS18B20
  *  GET /update                                         - check GitHub for newer firmware now
  *  GET /tvcodes                                        - TV power code list, one description per line
  *  GET /scan?i=N                                       - send TV power code N
@@ -20,6 +21,7 @@
 #include "wifi_connection.h"
 #include "ir_control.h"
 #include "ota.h"
+#include "temp_sensor.h"
 #include "config.h"
 #include "ui.h"
 
@@ -77,6 +79,7 @@ static void showStartPage(void){
   webServer.sendContent(body);
   sendFlash(INDEX_HTML);
   webServer.sendContent(String(FPSTR(UI_AC_SET)) + acMode + String(FPSTR(UI_QUOTE_COMMA)) + String(acTemp) + String(FPSTR(UI_COMMA_QUOTE)) + acFan + String(FPSTR(UI_CALL_END)) + String(acOn) + String(FPSTR(UI_SCRIPT_CALL_END)));
+  if(TEMP_present()) webServer.sendContent(String(FPSTR(UI_ROOM_START)) + TEMP_get() + String(FPSTR(UI_CALL_END_QUOTE)));
   endPage();
 }
 
@@ -170,6 +173,14 @@ static void airCon(void){
     webServer.send(200, "text/plain", "OK");
   }else{
     webServer.send(400, "text/plain", "Unsupported AC protocol");
+  }
+}
+
+static void roomTemperature(void){
+  if(TEMP_present()){
+    webServer.send(200, "text/plain", TEMP_get());
+  }else{
+    webServer.send(404, "text/plain", "No temperature sensor");
   }
 }
 
@@ -292,6 +303,7 @@ void HTTP_SERVER_init(void){
   webServer.on("/save", saveSettings);
   webServer.on("/ac", airCon);
   webServer.on("/acprotocols", acProtocols);
+  webServer.on("/temperature", roomTemperature);
   webServer.on("/update", checkUpdate);
   webServer.on("/selectap", selectAP);
   webServer.on("/aplist", apList);

@@ -3,7 +3,7 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        17
+#define FIRMWARE_VERSION        18
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
@@ -21,6 +21,11 @@
  * Avoid D3(0), D4(2), D8(15) as they affect boot. D1=5, D2=4, D5=14, D6=12, D7=13 */
 #define IR_PINS                 {5, 4, 14, 12, 13}
 #define IR_PIN_MAIN             5   // One of IR_PINS. Passed to the IR library.
+
+/* Optional DS18B20 room temperature sensor on D3. The D1 mini has a 10k pull-up there; add 4.7k to 3V3 for longer wires.
+ * The sensor leaves the line high at boot, so GPIO0 still boots normally. */
+#define TEMP_PIN                0
+#define TEMP_READ_INTERVAL_MS   10000
 
 /* Defaults until changed on the Settings page (stored in EEPROM).
  * TV code is an index into the TV power list in ir_codes.h; it changes if that file is regenerated. */
