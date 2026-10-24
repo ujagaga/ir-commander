@@ -60,10 +60,9 @@ static const char INDEX_HTML[] PROGMEM = R"html(
       </div>
       <div class="row"><div><label for="am">Mode</label><select id="am"><option value="cool">Cool</option><option value="heat">Heat</option><option value="auto">Auto</option><option value="dry">Dry</option><option value="fan">Fan only</option></select></div>
       <div><label for="af">Fan speed</label><select id="af"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div></div>
-      <div class="row ac-actions"><button type="button" onclick="ac(1)">Turn on / Apply</button><button type="button" onclick="ac(0)">Turn off</button></div>
+      <div class="row ac-actions"><button type="button" onclick="ac(1)">On / Apply</button><button type="button" onclick="ac(0)">Off</button></div>
     </section>
   </main>
-  <p class="footnote">Infrared sends commands; the AC doesn’t report its state back.</p>
 <script>
   var modeIcons={"cool": "/icons/cool-0da41409ccc3.svg", "heat": "/icons/heat-721f0eb2cafc.svg", "auto": "/icons/auto-f2e9892497ab.svg", "dry": "/icons/dry-8dff9712e689.svg", "fan": "/icons/fan-1354feac9110.svg"};
   function updateModeIcon(){
@@ -93,7 +92,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
     b.onpointerup=b.onpointercancel=b.onlostpointercapture=stop;
     b.onclick=function(e){if(e.detail===0&&!busy)send('/tv?cmd='+b.dataset.cmd,names[b.dataset.cmd]);};
     b.oncontextmenu=function(){return false;};
-  });
+  });ac does
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
   function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
   function acSet(m,t,f,on){document.getElementById('ac-on').hidden=!on;document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}

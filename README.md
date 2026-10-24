@@ -131,11 +131,11 @@ asset hashes, SVG validity, and page references.
   for this TV (or another TV using standard RC5 on address 1).
 - **Air conditioner.** Pick mode (Cool, Heat, Auto, Dry, Fan), temperature
   with the − / + buttons (17–30 °C) and fan speed (Auto, Low, Medium, High),
-  then press **Turn on / Apply** or **Turn off**. AC remotes send the complete state with every press, so the AC goes
+  then press **On / Apply** or **Off**. AC remotes send the complete state with every press, so the AC goes
   straight to the chosen settings. The last sent mode, temperature and fan
   speed are shown again when the page is reloaded (kept in RAM, reset to
   Cool / 24 °C / Auto on reboot). A spinning circle around the temperature
-  shows that the last command sent was **Turn on / Apply**. Command feedback confirms sending, not the
+  shows that the last command sent was **On / Apply**. Command feedback confirms sending, not the
   actual device state; infrared does not report AC power back.
   With a DS18B20 connected, the room temperature is shown under the target
   temperature value and refreshed every 30 s (dash until the first reading).
