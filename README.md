@@ -138,7 +138,7 @@ asset hashes, SVG validity, and page references.
   shows that the last command sent was **Turn on / Apply**. Command feedback confirms sending, not the
   actual device state; infrared does not report AC power back.
   With a DS18B20 connected, the room temperature is shown under the target
-  temperature and refreshed every 30 s (dash until the first reading).
+  temperature value and refreshed every 30 s (dash until the first reading).
 
 ### Settings
 

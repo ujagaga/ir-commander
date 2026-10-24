@@ -55,7 +55,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
       <div class="card-head"><div><h2 id="ac-title">Air conditioner</h2></div><span id="ac-mode-icon" class="device-icon" aria-hidden="true"><img src="/icons/cool-0da41409ccc3.svg" width="28" height="25" alt="" draggable="false"></span></div>
       <div class="temperature">
         <button type="button" id="less" onclick="temperature(-1)" aria-label="Decrease temperature">&minus;</button>
-        <div><span id="ac-on" class="ac-on" role="img" aria-label="AC on" hidden></span><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small><small id="room" hidden></small></div>
+        <div><span id="ac-on" class="ac-on" role="img" aria-label="AC on" hidden></span><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small id="room" hidden></small></div>
         <button type="button" id="more" onclick="temperature(1)" aria-label="Increase temperature">+</button>
       </div>
       <div class="row"><div><label for="am">Mode</label><select id="am"><option value="cool">Cool</option><option value="heat">Heat</option><option value="auto">Auto</option><option value="dry">Dry</option><option value="fan">Fan only</option></select></div>
