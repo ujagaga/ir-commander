@@ -10,6 +10,7 @@ static const char HTML_BEGIN[] PROGMEM = R"html(
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#152923">
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon-b0c87b10e34d.svg">
 
 )html";
 
@@ -330,6 +331,8 @@ static const char ICON_DRY[] PROGMEM = R"svg(<svg xmlns="http://www.w3.org/2000/
 
 static const char ICON_FAN[] PROGMEM = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc. --><path fill="#236349" d="M160 144c0-79.5 64.5-144 144-144 8.8 0 16 7.2 16 16l0 152.2c15-5.3 31.2-8.2 48-8.2 79.5 0 144 64.5 144 144 0 8.8-7.2 16-16 16l-152.2 0c5.3 15 8.2 31.2 8.2 48 0 79.5-64.5 144-144 144-8.8 0-16-7.2-16-16l0-152.2c-15 5.3-31.2 8.2-48 8.2-79.5 0-144-64.5-144-144 0-8.8 7.2-16 16-16l152.2 0c-5.3-15-8.2-31.2-8.2-48zm96 144a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>)svg";
 
+static const char ICON_FAVICON[] PROGMEM = R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#152923"/><path d="M5 16h7l3-6 4 12 3-6h5" fill="none" stroke="#e6f1b5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>)svg";
+
 struct IconAsset { const char* url; PGM_P content; };
 static const IconAsset ICON_ASSETS[] = {
   {"/icons/home-e4ff8833c2f2.svg", ICON_HOME},
@@ -341,4 +344,5 @@ static const IconAsset ICON_ASSETS[] = {
   {"/icons/auto-f2e9892497ab.svg", ICON_AUTO},
   {"/icons/dry-8dff9712e689.svg", ICON_DRY},
   {"/icons/fan-1354feac9110.svg", ICON_FAN},
+  {"/icons/favicon-b0c87b10e34d.svg", ICON_FAVICON},
 };

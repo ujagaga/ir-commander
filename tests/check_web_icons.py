@@ -14,7 +14,7 @@ class WebIconsTest(unittest.TestCase):
         server = (ROOT / 'http_server.cpp').read_text()
         assets = dict(re.findall(r'ICON_(\w+)\[\] PROGMEM = R"svg\((.*?)\)svg";', header, re.S))
         routes = re.findall(r'\{"(/icons/[^" ]+)", ICON_(\w+)\}', header)
-        self.assertEqual(len(assets), 9)
+        self.assertEqual(len(assets), 10)
         self.assertEqual(len(routes), len(assets))
         for url, key in routes:
             svg = assets[key]
