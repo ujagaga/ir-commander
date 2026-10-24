@@ -115,7 +115,9 @@ asset hashes, SVG validity, and page references.
 - **Air conditioner.** Pick mode (Cool, Heat, Auto, Dry, Fan), temperature
   with the − / + buttons (17–30 °C) and fan speed (Auto, Low, Medium, High),
   then press **Turn on / Apply** or **Turn off**. AC remotes send the complete state with every press, so the AC goes
-  straight to the chosen settings. Command feedback confirms sending, not the
+  straight to the chosen settings. The last sent mode, temperature and fan
+  speed are shown again when the page is reloaded (kept in RAM, reset to
+  Cool / 24 °C / Auto on reboot). Command feedback confirms sending, not the
   actual device state; infrared does not report power or room temperature back.
 
 ### Settings

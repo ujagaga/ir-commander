@@ -97,6 +97,7 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   });
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
   function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
+  function acSet(m,t,f){document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}
   async function ac(p){
     var v=function(id){return document.getElementById(id).value;};
     var buttons=document.querySelectorAll('.ac-actions button');buttons.forEach(b=>b.disabled=true);
@@ -283,6 +284,10 @@ static const char UI_EMPTY_HOME[] PROGMEM = "<section class='card'><h2>No contro
 static const char UI_TV_STATE[] PROGMEM = "<script>var tvCur=";
 static const char UI_AC_STATE[] PROGMEM = ",acCur='";
 static const char UI_STRING_SCRIPT_END[] PROGMEM = "';</script>";
+static const char UI_AC_SET[] PROGMEM = "<script>acSet('";
+static const char UI_QUOTE_COMMA[] PROGMEM = "',";
+static const char UI_COMMA_QUOTE[] PROGMEM = ",'";
+static const char UI_CALL_END[] PROGMEM = "');</script>";
 static const char UI_HOST_STATE[] PROGMEM = "<script>var hostCur='";
 static const char UI_VISIBILITY_STATE[] PROGMEM = "<script>var visibleControls=";
 static const char UI_SCRIPT_END[] PROGMEM = ";</script>";

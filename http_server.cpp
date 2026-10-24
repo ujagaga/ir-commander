@@ -58,6 +58,11 @@ static void sendPage(const String& body){
   endPage();
 }
 
+// Last AC settings sent from the home page, shown again on reload. Lost on reboot.
+static String acMode = "cool";
+static String acFan = "auto";
+static int acTemp = 24;
+
 static void showStartPage(void){
   uint8_t controls = WIFIC_getVisibleControls();
   String body = String(FPSTR(UI_STYLE_OPEN));
@@ -70,6 +75,7 @@ static void showStartPage(void){
   beginPage();
   webServer.sendContent(body);
   sendFlash(INDEX_HTML);
+  webServer.sendContent(String(FPSTR(UI_AC_SET)) + acMode + String(FPSTR(UI_QUOTE_COMMA)) + String(acTemp) + String(FPSTR(UI_COMMA_QUOTE)) + acFan + String(FPSTR(UI_CALL_END)));
   endPage();
 }
 
@@ -150,6 +156,15 @@ static void airCon(void){
   String protocol = webServer.hasArg("protocol") ? webServer.arg("protocol") : IR_getAcProtocol();
   if(IR_sendAc(protocol, webServer.arg("power").toInt(), webServer.arg("mode"),
                webServer.arg("temp").toInt(), webServer.arg("fan"))){
+    // Protocol scan from Settings passes protocol and fixed values; don't remember those.
+    String mode = webServer.arg("mode"), fan = webServer.arg("fan");
+    int temp = webServer.arg("temp").toInt();
+    if(!webServer.hasArg("protocol") && strstr("|cool|heat|auto|dry|fan|", ("|" + mode + "|").c_str())
+       && strstr("|auto|low|medium|high|", ("|" + fan + "|").c_str()) && temp >= 17 && temp <= 30){
+      acMode = mode;
+      acFan = fan;
+      acTemp = temp;
+    }
     webServer.send(200, "text/plain", "OK");
   }else{
     webServer.send(400, "text/plain", "Unsupported AC protocol");
