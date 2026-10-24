@@ -24,72 +24,99 @@
 
 static const char HTML_BEGIN[] PROGMEM = R"html(
 <!DOCTYPE HTML>
-<html>
+<html lang="en">
   <head>
-    <meta name = "viewport" content = "width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#152923">
     <title>IR Commander</title>
     <style>
-      body { background-color: white; font-family: Arial, Helvetica, Sans-Serif; Color: #000000; }
-      .contain{width: 100%;}
-      .center_div{margin:0 auto; max-width: 400px;position:relative;}
-      button{width:100%;border:0;border-radius:0.3rem;color:#fff;line-height:2.4rem;font-size:1.2rem;background-color:#1fa3ec;}
-      .btn_pwr{line-height:6rem;font-size:3rem;background-color:#e53935;}
-      .hold{user-select:none;-webkit-user-select:none;touch-action:none;}
-      input{width:95%;padding:5px;font-size:1em;}
-      select{padding:5px;font-size:1em;max-width:100%;}
-      .row{display:flex;gap:4px;}
-      .nav{display:flex;gap:1.5rem;padding:0.6rem 0;margin-bottom:0.5rem;border-bottom:2px solid #1fa3ec;}
-      .nav a{color:#1fa3ec;text-decoration:none;font-weight:bold;font-size:1.2rem;}
+      :root{color-scheme:light;--ink:#152923;--muted:#60716a;--line:#dce4dc;--green:#236349;--paper:#fffefa}
+      *{box-sizing:border-box}body{margin:0;background:#eff2eb;color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}
+      .center_div{max-width:860px;margin:auto;padding:32px 24px 48px}.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:750;letter-spacing:-.5px}.brand-mark{display:grid;place-items:center;background:var(--ink);color:#e6f1b5;border-radius:13px;width:42px;height:42px;font-size:24px}.brand small{display:block;font-size:11px;letter-spacing:1.8px;color:var(--muted);font-weight:600;text-transform:uppercase}
+      .nav{display:flex;gap:6px;background:#e2e8df;padding:5px;border-radius:14px;margin:26px 0 30px}.nav a{flex:1;text-align:center;padding:10px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:650}.nav a[aria-current]{background:var(--paper);color:var(--ink);box-shadow:0 2px 5px #1529230a}
+      h1{font-size:30px;line-height:1.2;letter-spacing:-1px;margin:0 0 8px}h3 label{font:inherit;color:inherit;margin:0}h2,h3{font-size:20px;letter-spacing:-.5px;margin:0 0 18px}p{color:var(--muted);font-size:14px} .intro{margin:0 0 26px}.eyebrow{font-size:11px;letter-spacing:1.6px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+      .devices{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px}.devices .card{margin:0}.card-head{display:flex;align-items:center;justify-content:space-between}.device-icon{color:var(--green);font-size:25px}.hint{font-size:12px;color:var(--muted)}
+      button{font:inherit;font-weight:650;cursor:pointer;min-height:48px;width:100%;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#edf1e9;padding:10px 12px;touch-action:manipulation;transition:background .15s,transform .15s}button:hover{background:#e1e8dc}button:active,.hold.pressed{transform:scale(.97);background:#d4dfce}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--green);color:white;border-color:var(--green)}button.primary:hover{background:#194e38}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #b17a21;outline-offset:3px}
+      .btn_pwr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:124px;height:124px;border-radius:50%;margin:22px auto 26px;background:#f8e7df;border:1px solid #efd4c7;color:#a0442e;font-size:14px}.btn_pwr span{font-size:40px;line-height:1.3}.btn_pwr:hover{background:#f0d6c9}.hold{user-select:none;-webkit-user-select:none;touch-action:none}.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}.volume button{height:64px}.volume .symbol{font-size:26px}.tv-hint{text-align:center;margin:18px 0 0}
+      label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:14px 0 6px}input,select{font:inherit;width:100%;max-width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px}input{margin-bottom:8px}.temperature{display:flex;align-items:center;gap:12px;margin:20px 0}.temperature button{width:48px;flex-shrink:0;font-size:24px}.temperature div{flex:1;text-align:center}.temperature output{font-size:56px;letter-spacing:-3px;font-weight:600;line-height:1.2}.temperature .unit{font-size:23px;color:var(--muted);vertical-align:top}.temperature small{display:block;font-size:11px;color:var(--muted)}.ac-actions{margin-top:24px}
+      .status{min-height:48px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:#e6edde;margin:20px 0 10px;font-size:13px;color:var(--ink)}.status.error{background:#fae7df;color:#933c28}.footnote{text-align:center;font-size:12px}hr{border:0;border-top:1px solid var(--line);margin:24px 0}a{color:var(--green)}[id$="res"]{overflow-wrap:anywhere}#vm a{display:inline-block;padding:10px 0}summary{cursor:pointer;font-weight:650}
+      @media(max-width:600px){.center_div{padding:20px 16px 32px}.devices{grid-template-columns:1fr}.card{padding:20px;border-radius:20px}.nav{margin:22px 0}h1{font-size:27px}.btn_pwr{margin:12px auto 20px;width:110px;height:110px}.temperature{margin:16px 0}.row button{padding:10px 8px}}
+      @media(prefers-reduced-motion:reduce){button{transition:none}}
     </style>
   </head>
   <body><div class="contain"><div class="center_div">
-  <div class="nav"><a href="/">Home</a><a href="/settings">Settings</a></div>
+  <header class="brand"><span class="brand-mark" aria-hidden="true">&#x2301;</span><div>IR Commander<small>Your home, at hand</small></div></header>
+  <nav class="nav" aria-label="Main navigation"><a href="/">Home</a><a href="/settings">Settings</a></nav>
+  <script>document.querySelectorAll('.nav a').forEach(function(a){if(a.getAttribute('href')===(location.pathname==='/'?'/':'/settings'))a.setAttribute('aria-current','page');});</script>
 )html";
 
 static const char HTML_END[] PROGMEM = "</div></div></body></html>";
 
 static const char INDEX_HTML[] PROGMEM = R"html(
-  <h3>TV</h3>
-  <button class="btn_pwr hold" type="button" data-cmd="power">&#x23FB;</button><br><br>
-  <div class="row">
-    <button class="hold" type="button" data-cmd="volume_down">Vol &minus;</button>
-    <button class="hold" type="button" data-cmd="mute">Mute</button>
-    <button class="hold" type="button" data-cmd="volume_up">Vol +</button>
-  </div>
-  <hr>
-  <h3>Air conditioner</h3>
-  <select id='am'><option value='cool'>Cool</option><option value='heat'>Heat</option><option value='auto'>Auto</option><option value='dry'>Dry</option><option value='fan'>Fan</option></select>
-  <select id='at'></select>
-  <select id='af'><option value='auto'>Fan auto</option><option value='low'>Low</option><option value='medium'>Medium</option><option value='high'>High</option></select><br><br>
-  <div class="row">
-    <button type="button" onclick="ac(1)">ON</button>
-    <button type="button" onclick="ac(0)">OFF</button>
-  </div>
-  <p id='res'></p>
+  <h1>A little more comfortable.</h1>
+  <p class="intro">Your favorite spot. Everything within reach.</p>
+  <main class="devices">
+    <section class="card" aria-labelledby="tv-title">
+      <div class="card-head"><div><div class="eyebrow">Entertainment</div><h2 id="tv-title">Television</h2></div><span class="device-icon" aria-hidden="true">&#9635;</span></div>
+      <button class="btn_pwr hold" type="button" data-cmd="power" aria-label="Toggle TV power"><span aria-hidden="true">&#x23FB;</span>Power</button>
+      <label>Volume</label>
+      <div class="row volume">
+        <button class="hold symbol" type="button" data-cmd="volume_down" aria-label="Volume down">&minus;</button>
+        <button class="hold" type="button" data-cmd="mute">Mute</button>
+        <button class="hold symbol" type="button" data-cmd="volume_up" aria-label="Volume up">+</button>
+      </div>
+      <p class="tv-hint hint">Tap to send &middot; Hold to repeat</p>
+    </section>
+    <section class="card" aria-labelledby="ac-title">
+      <div class="card-head"><div><div class="eyebrow">Climate</div><h2 id="ac-title">Air conditioner</h2></div><span class="device-icon" aria-hidden="true">&#10052;</span></div>
+      <div class="temperature">
+        <button type="button" id="less" onclick="temperature(-1)" aria-label="Decrease temperature">&minus;</button>
+        <div><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small></div>
+        <button type="button" id="more" onclick="temperature(1)" aria-label="Increase temperature">+</button>
+      </div>
+      <div class="row"><div><label for="am">Mode</label><select id="am"><option value="cool">Cool</option><option value="heat">Heat</option><option value="auto">Auto</option><option value="dry">Dry</option><option value="fan">Fan only</option></select></div>
+      <div><label for="af">Fan speed</label><select id="af"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div></div>
+      <div class="row ac-actions"><button class="primary" type="button" onclick="ac(1)">Turn on / Apply</button><button type="button" onclick="ac(0)">Turn off</button></div>
+    </section>
+  </main>
+  <p id="res" class="status" role="status" aria-live="polite">Ready when you are. Choose a control to send a command.</p>
+  <p class="footnote">Infrared sends commands; device power and room temperature aren’t reported back.</p>
 <script>
-  function show(t){ document.getElementById('res').innerText=t; }
-  /* TV buttons keep sending their command while held. */
-  var held=null, n=0;
-  function rep(){
-    if(!held) return;
-    var cmd=held;
-    fetch('/tv?cmd='+cmd).then(r=>r.text()).then(t=>{show('TV '+cmd+' '+t+' x'+(++n));}).finally(rep);
+  function show(t,error){var el=document.getElementById('res');el.textContent=t;el.classList.toggle('error',!!error);}
+  async function send(url,message){
+    var controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),8000);
+    try{var r=await fetch(url,{signal:controller.signal});var t=await r.text();if(!r.ok)throw new Error(t);show(message);return true;}
+    catch(e){show('Could not send command. '+(e.name==='AbortError'?'Device timed out.':e.message)+' Try again.',true);return false;}finally{clearTimeout(timeout);}
+  }
+  var held=null,timer=null,busy=false;
+  var names={power:'TV power command sent.',volume_up:'TV volume up sent.',volume_down:'TV volume down sent.',mute:'TV mute command sent.'};
+  function stop(){clearTimeout(timer);if(held)held.classList.remove('pressed');held=null;}
+  async function rep(){
+    var b=held;if(!b||busy)return;busy=true;
+    var ok=await send('/tv?cmd='+b.dataset.cmd,names[b.dataset.cmd]);busy=false;
+    if(!ok){stop();return;}if(held===b)timer=setTimeout(rep,120);else if(held)rep();
   }
   document.querySelectorAll('.hold').forEach(function(b){
-    b.onpointerdown=function(){ if(!held){ held=b.dataset.cmd; n=0; rep(); } };
-    b.onpointerup=b.onpointerleave=b.onpointercancel=function(){ held=null; };
-    b.oncontextmenu=function(){ return false; };
+    b.onpointerdown=function(e){if(e.button!==0)return;e.preventDefault();stop();held=b;b.classList.add('pressed');b.setPointerCapture(e.pointerId);rep();};
+    b.onpointerup=b.onpointercancel=b.onlostpointercapture=stop;
+    b.onclick=function(e){if(e.detail===0&&!busy)send('/tv?cmd='+b.dataset.cmd,names[b.dataset.cmd]);};
+    b.oncontextmenu=function(){return false;};
   });
-  for(var t=17;t<=30;t++){ document.getElementById('at').innerHTML+='<option'+(t==24?' selected':'')+'>'+t+'</option>'; }
-  function ac(p){
+  window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
+  function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
+  async function ac(p){
     var v=function(id){return document.getElementById(id).value;};
-    fetch('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af')).then(r=>r.text()).then(t=>{show('AC '+t);});
+    var buttons=document.querySelectorAll('.ac-actions button');buttons.forEach(b=>b.disabled=true);
+    await send('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af'),p?'AC settings sent: '+v('am')+', '+v('at')+' °C, fan '+v('af')+'.':'AC off command sent.');
+    buttons.forEach(b=>b.disabled=false);
   }
 </script>
 )html";
 
 static const char SETTINGS_HTML[] PROGMEM = R"html(
-  <h3>TV code</h3>
+  <h1>Make it yours.</h1><p class="intro">Pair your remotes and manage your connection.</p>
+  <section class="card"><h3><label for="tv">TV power code</label></h3>
   <select id='tv'><option>Loading...</option></select><br><br>
   <div class="row">
     <button type="button" id="ta" onclick="tvAuto()">Scan</button>
@@ -99,8 +126,8 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
   </div>
   <p>Scan sends the next code every 2s. Stop when the TV reacts, then use Prev/Test to confirm.</p>
   <p id='tres'></p>
-  <hr>
-  <h3>AC protocol</h3>
+  </section><section class="card">
+  <h3><label for="ac">AC protocol</label></h3>
   <select id='ac'><option>Loading...</option></select><br><br>
   <div class="row">
     <button type="button" id="aa" onclick="acAuto()">Scan</button>
@@ -109,17 +136,17 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
   </div>
   <p>Scan: with the AC running, sends OFF in the next protocol every 3s. Stop when the AC turns off.</p>
   <p id='ares'></p>
-  <hr>
-  <button type="button" onclick="save()">Save TV code and AC protocol</button>
+  </section>
+  <button class="primary" type="button" onclick="save()">Save TV code and AC protocol</button>
   <p id='sres'></p>
-  <hr>
-  <h3>Test any code</h3>
+  <details class="card"><summary>Advanced: test any code</summary>
+  <label for="pr">Protocol</label>
   <input id='pr' placeholder='protocol (NEC, RC5, RC6, SAMSUNG...)'><br>
-  <input id='cd' placeholder='code (e.g. 0x20DF10EF)'><br>
-  <input id='bt' placeholder='bits (empty = protocol default)'><br><br>
+  <label for='cd'>Hex code</label><input id='cd' placeholder='code (e.g. 0x20DF10EF)'><br>
+  <label for='bt'>Bit count (optional)</label><input id='bt' placeholder='bits (empty = protocol default)'><br><br>
   <button type="button" onclick="tst()">Send</button>
   <p id='xres'></p>
-  <hr>
+  </details><section class="card">
   <h3>System</h3>
   <div class="row">
     <button type="button" onclick="location.href='/selectap';">Configure WiFi</button>
@@ -128,7 +155,7 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
 <script>
   function $(id){ return document.getElementById(id); }
   function get(url,out){
-    return fetch(url).then(r=>r.text().then(t=>{ $(out).innerText=t; return r.ok; }));
+    return fetch(url).then(r=>r.text().then(t=>{ $(out).innerText=t; return r.ok; })).catch(()=>{$(out).innerText='Connection failed. Please try again.';return false;});
   }
   fetch('/tvcodes').then(r=>r.text()).then(t=>{
     var h=''; t.trim().split('\n').forEach(function(d,i){ h+='<option value='+i+(i==tvCur?' selected':'')+'>'+i+': '+d+'</option>'; });
@@ -196,13 +223,13 @@ static const char SETTINGS_HTML[] PROGMEM = R"html(
 
 static const char APLIST_HTML[] PROGMEM = R"html(
   <style>#vm{height:50vh;overflow-y:auto;margin-bottom:1em;}</style>
-  <h1 id='ttl'>Networks found:</h1>
+  <h1>WiFi setup</h1><p>Choose your network to connect IR Commander.</p><h3 id='ttl'>Available networks</h3>
   <div id='vm'>Please wait...</div>
   <form method='get' action='wifisave'>
     <button type='button' onclick='refresh();'>Rescan</button><br/><br/>
-    <input id='s' name='s' length=32 placeholder='SSID (Leave blank for AP mode)'><br>
-    <input id='p' name='p' length=63 placeholder='password'><br>
-    <br><button type='submit'>save</button>
+    <label for='s'>Network name (blank for access point mode)</label><input id='s' name='s' maxlength='32' placeholder='SSID (Leave blank for AP mode)'><br>
+    <label for='p'>WiFi password</label><input id='p' name='p' type='password' maxlength='63' autocomplete='new-password' placeholder='Password'><br>
+    <br><button class='primary' type='submit'>Save and connect</button>
   </form>
 <script>
   function c(l){
@@ -240,7 +267,7 @@ static void showStartPage(void){
 static void showSettings(void){
   String body = "<script>var tvCur=" + String(IR_getTvCode()) + ",acCur='" + IR_getAcProtocol() + "';</script>";
   body += FPSTR(SETTINGS_HTML);
-  body += "<p>" + WIFIC_getStatus() + "<br>" + OTA_getStatus() + "</p>";
+  body += "<p>" + WIFIC_getStatus() + "<br>" + OTA_getStatus() + "</p></section>";
   sendPage(body);
 }
 

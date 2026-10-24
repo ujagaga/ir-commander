@@ -92,7 +92,9 @@ empty SSID switches to access point only mode.
 
 ## Web interface
 
-The navigation bar switches between **Home** and **Settings**.
+The mobile-friendly interface switches between **Home** and **Settings**. All
+styles and scripts are served by the device, with no external dependencies.
+Controls stack on phones and sit side by side on larger screens.
 
 ### Home
 
@@ -102,9 +104,10 @@ The navigation bar switches between **Home** and **Settings**.
   Volume and mute use the fixed RC5 codes from `config.h`, so they only work
   for this TV (or another TV using standard RC5 on address 1).
 - **Air conditioner.** Pick mode (Cool, Heat, Auto, Dry, Fan), temperature
-  (17–30 °C) and fan speed (Auto, Low, Medium, High), then press **ON** or
-  **OFF**. AC remotes send the complete state with every press, so the AC goes
-  straight to the chosen settings.
+  with the − / + buttons (17–30 °C) and fan speed (Auto, Low, Medium, High),
+  then press **Turn on / Apply** or **Turn off**. AC remotes send the complete state with every press, so the AC goes
+  straight to the chosen settings. Command feedback confirms sending, not the
+  actual device state; infrared does not report power or room temperature back.
 
 ### Settings
 
@@ -121,7 +124,7 @@ The navigation bar switches between **Home** and **Settings**.
   - **Test ON / Test OFF** send the selected protocol (cool, 24 °C, fan auto).
 - **Save TV code and AC protocol** stores both to EEPROM. Until saved, the
   defaults from `config.h` are used (`TV_CODE_DEFAULT`, `AC_PROTOCOL_DEFAULT`).
-- **Test any code** sends a code typed by hand (protocol name, hex code,
+- **Advanced: test any code** expands to send a code typed by hand (protocol name, hex code,
   optional bit count).
 - **System**: WiFi configuration, manual firmware update check, connection and
   firmware status.

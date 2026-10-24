@@ -3,14 +3,14 @@
 
 /* Release: increase FIRMWARE_VERSION, run tools/build.sh, commit config.h together with build/ir-commander.ino.bin.
  * After each WiFi connection the device compares this number on GitHub and updates itself when it is higher. */
-#define FIRMWARE_VERSION        6
+#define FIRMWARE_VERSION        7
 #define OTA_GITHUB_REPOSITORY   "ujagaga/ir-commander"
 #define OTA_GITHUB_BRANCH       "main"
 #define OTA_FIRMWARE_PATH       "build/ir-commander.ino.bin"
 
 #define PASSWORD                "ircommander"   // Config AP password (min 8 chars)
 #define AP_NAME_PREFIX          "IR_Commander_" // Will be appended by device MAC
-#define HOSTNAME                "ir-commander"  // http://ir-commander.local
+#define HOSTNAME                "ir-tv"  // http://ir-commander.local
 
 #define AP_MODE_TIMEOUT_S       120 // While in AP only mode, retry STA connection after this period.
 #define STA_CONNECT_TIMEOUT_S   30  // If STA does not connect within this period, fall back to AP only and retry after AP_MODE_TIMEOUT_S.
