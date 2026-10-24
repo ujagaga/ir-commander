@@ -117,7 +117,8 @@ asset hashes, SVG validity, and page references.
   then press **Turn on / Apply** or **Turn off**. AC remotes send the complete state with every press, so the AC goes
   straight to the chosen settings. The last sent mode, temperature and fan
   speed are shown again when the page is reloaded (kept in RAM, reset to
-  Cool / 24 °C / Auto on reboot). Command feedback confirms sending, not the
+  Cool / 24 °C / Auto on reboot). A spinning circle around the temperature
+  shows that the last command sent was **Turn on / Apply**. Command feedback confirms sending, not the
   actual device state; infrared does not report power or room temperature back.
 
 ### Settings

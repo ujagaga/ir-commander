@@ -62,6 +62,7 @@ static void sendPage(const String& body){
 static String acMode = "cool";
 static String acFan = "auto";
 static int acTemp = 24;
+static bool acOn = false;
 
 static void showStartPage(void){
   uint8_t controls = WIFIC_getVisibleControls();
@@ -75,7 +76,7 @@ static void showStartPage(void){
   beginPage();
   webServer.sendContent(body);
   sendFlash(INDEX_HTML);
-  webServer.sendContent(String(FPSTR(UI_AC_SET)) + acMode + String(FPSTR(UI_QUOTE_COMMA)) + String(acTemp) + String(FPSTR(UI_COMMA_QUOTE)) + acFan + String(FPSTR(UI_CALL_END)));
+  webServer.sendContent(String(FPSTR(UI_AC_SET)) + acMode + String(FPSTR(UI_QUOTE_COMMA)) + String(acTemp) + String(FPSTR(UI_COMMA_QUOTE)) + acFan + String(FPSTR(UI_CALL_END)) + String(acOn) + String(FPSTR(UI_SCRIPT_CALL_END)));
   endPage();
 }
 
@@ -164,6 +165,7 @@ static void airCon(void){
       acMode = mode;
       acFan = fan;
       acTemp = temp;
+      acOn = webServer.arg("power").toInt();
     }
     webServer.send(200, "text/plain", "OK");
   }else{

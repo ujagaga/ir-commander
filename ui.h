@@ -23,11 +23,11 @@ static const char HTML_LAYOUT[] PROGMEM = R"html(
       .devices{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px}.devices .card{margin:0}.card-head{display:flex;align-items:center;justify-content:space-between}.device-icon{color:var(--green);font-size:25px}.device-icon img{display:block;width:28px;height:25px}.hint{font-size:12px;color:var(--muted)}
       button{font:inherit;font-weight:650;cursor:pointer;min-height:48px;width:100%;border:1px solid var(--line);border-radius:12px;color:var(--ink);background:#edf1e9;padding:10px 12px;touch-action:manipulation;transition:background .15s,transform .15s}button:hover{background:#e1e8dc}button:active,.hold.pressed{transform:scale(.97);background:#d4dfce}button:disabled{opacity:.45;cursor:default}button.primary{background:var(--green);color:white;border-color:var(--green)}button.primary:hover{background:#194e38}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #b17a21;outline-offset:3px}
       .btn_pwr{display:flex;flex-direction:column;align-items:center;justify-content:center;width:124px;height:124px;border-radius:50%;margin:22px auto 26px;background:#f8e7df;border:1px solid #efd4c7;color:#a0442e;font-size:14px}.btn_pwr img{display:block;width:40px;height:44px;margin-bottom:6px;pointer-events:none}.btn_pwr:hover{background:#f0d6c9}.hold{user-select:none;-webkit-user-select:none;touch-action:none}.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}.volume button{height:64px}.volume .symbol{font-size:26px}.tv-hint{text-align:center;margin:18px 0 0}
-      label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:14px 0 6px}input,select{font:inherit;width:100%;max-width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px}input{margin-bottom:8px}.temperature{display:flex;align-items:center;gap:12px;margin:20px 0}.temperature button{width:48px;flex-shrink:0;font-size:24px}.temperature div{flex:1;text-align:center}.temperature output{font-size:56px;letter-spacing:-3px;font-weight:600;line-height:1.2}.temperature .unit{font-size:23px;color:var(--muted);vertical-align:top}.temperature small{display:block;font-size:11px;color:var(--muted)}.ac-actions{margin-top:24px}
+      label{display:block;font-size:12px;font-weight:650;color:var(--muted);margin:14px 0 6px}input,select{font:inherit;width:100%;max-width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px}input{margin-bottom:8px}.temperature{display:flex;align-items:center;gap:12px;margin:20px 0}.temperature button{width:48px;flex-shrink:0;font-size:24px}.temperature div{flex:1;text-align:center}.temperature output{font-size:56px;letter-spacing:-3px;font-weight:600;line-height:1.2}.temperature .unit{font-size:23px;color:var(--muted);vertical-align:top}.temperature small{display:block;font-size:11px;color:var(--muted)}.ac-actions{margin-top:24px}.temperature div{position:relative}.ac-on{position:absolute;left:50%;top:50%;width:130px;height:130px;margin:-65px 0 0 -65px;box-sizing:border-box;border:3px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin 1.2s linear infinite;pointer-events:none}.ac-on[hidden]{display:none}@keyframes spin{to{transform:rotate(360deg)}}
       .status{min-height:48px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:#e6edde;margin:20px 0 10px;font-size:13px;color:var(--ink)}.status.error{background:#fae7df;color:#933c28}.footnote{text-align:center;font-size:12px}hr{border:0;border-top:1px solid var(--line);margin:24px 0}a{color:var(--green)}[id$="res"]{overflow-wrap:anywhere}#vm a{display:inline-block;padding:10px 0}summary{cursor:pointer;font-weight:650}
       .visibility-option{display:flex;align-items:center;gap:12px;font-size:16px;color:var(--ink);min-height:48px}.visibility-option input{width:22px;height:22px;min-height:0;margin:0;accent-color:var(--green)}
       @media(max-width:600px){.center_div{padding:20px 16px 32px}.devices{grid-template-columns:1fr}.card{padding:20px;border-radius:20px}.nav{margin:22px 0}h1{font-size:27px}.btn_pwr{margin:12px auto 20px;width:110px;height:110px}.temperature{margin:16px 0}.row button{padding:10px 8px}}
-      @media(prefers-reduced-motion:reduce){button{transition:none}}
+      @media(prefers-reduced-motion:reduce){button{transition:none}.ac-on{animation-duration:4s}}
     </style>
   </head>
   <body><div class="contain"><div class="center_div">
@@ -55,12 +55,12 @@ static const char INDEX_HTML[] PROGMEM = R"html(
       <div class="card-head"><div><h2 id="ac-title">Air conditioner</h2></div><span id="ac-mode-icon" class="device-icon" aria-hidden="true"><img src="/icons/cool-0da41409ccc3.svg" width="28" height="25" alt="" draggable="false"></span></div>
       <div class="temperature">
         <button type="button" id="less" onclick="temperature(-1)" aria-label="Decrease temperature">&minus;</button>
-        <div><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small></div>
+        <div><span id="ac-on" class="ac-on" role="img" aria-label="AC on" hidden></span><output id="at" aria-live="polite" aria-label="Target temperature">24</output><span class="unit">&deg;C</span><small>Target temperature</small></div>
         <button type="button" id="more" onclick="temperature(1)" aria-label="Increase temperature">+</button>
       </div>
       <div class="row"><div><label for="am">Mode</label><select id="am"><option value="cool">Cool</option><option value="heat">Heat</option><option value="auto">Auto</option><option value="dry">Dry</option><option value="fan">Fan only</option></select></div>
       <div><label for="af">Fan speed</label><select id="af"><option value="auto">Auto</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></div></div>
-      <div class="row ac-actions"><button class="primary" type="button" onclick="ac(1)">Turn on / Apply</button><button type="button" onclick="ac(0)">Turn off</button></div>
+      <div class="row ac-actions"><button type="button" onclick="ac(1)">Turn on / Apply</button><button type="button" onclick="ac(0)">Turn off</button></div>
     </section>
   </main>
   <p id="res" class="status" role="status" aria-live="polite">Ready when you are. Choose a control to send a command.</p>
@@ -97,11 +97,11 @@ static const char INDEX_HTML[] PROGMEM = R"html(
   });
   window.addEventListener('blur',stop);document.addEventListener('visibilitychange',function(){if(document.hidden)stop();});
   function temperature(d){var el=document.getElementById('at');var t=Math.max(17,Math.min(30,Number(el.value)+d));el.value=t;document.getElementById('less').disabled=t===17;document.getElementById('more').disabled=t===30;}
-  function acSet(m,t,f){document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}
+  function acSet(m,t,f,on){document.getElementById('ac-on').hidden=!on;document.getElementById('am').value=m;document.getElementById('af').value=f;document.getElementById('at').value=t;temperature(0);updateModeIcon();}
   async function ac(p){
     var v=function(id){return document.getElementById(id).value;};
     var buttons=document.querySelectorAll('.ac-actions button');buttons.forEach(b=>b.disabled=true);
-    await send('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af'),p?'AC settings sent: '+v('am')+', '+v('at')+' °C, fan '+v('af')+'.':'AC off command sent.');
+    if(await send('/ac?power='+p+'&mode='+v('am')+'&temp='+v('at')+'&fan='+v('af'),p?'AC settings sent: '+v('am')+', '+v('at')+' °C, fan '+v('af')+'.':'AC off command sent.'))document.getElementById('ac-on').hidden=!p;
     buttons.forEach(b=>b.disabled=false);
   }
 </script>
@@ -287,7 +287,8 @@ static const char UI_STRING_SCRIPT_END[] PROGMEM = "';</script>";
 static const char UI_AC_SET[] PROGMEM = "<script>acSet('";
 static const char UI_QUOTE_COMMA[] PROGMEM = "',";
 static const char UI_COMMA_QUOTE[] PROGMEM = ",'";
-static const char UI_CALL_END[] PROGMEM = "');</script>";
+static const char UI_CALL_END[] PROGMEM = "',";
+static const char UI_SCRIPT_CALL_END[] PROGMEM = ");</script>";
 static const char UI_HOST_STATE[] PROGMEM = "<script>var hostCur='";
 static const char UI_VISIBILITY_STATE[] PROGMEM = "<script>var visibleControls=";
 static const char UI_SCRIPT_END[] PROGMEM = ";</script>";
