@@ -1,5 +1,9 @@
 #pragma once
 #include <pgmspace.h>
+#include "config.h"
+
+#define UI_STR_(x) #x
+#define UI_STR(x) UI_STR_(x)
 
 // Static UI assets stay in flash. HTTP routes and streaming live in http_server.cpp.
 
@@ -18,7 +22,7 @@ static const char HTML_LAYOUT[] PROGMEM = R"html(
     <style>
       :root{color-scheme:light;--ink:#152923;--muted:#60716a;--line:#dce4dc;--green:#236349;--paper:#fffefa}
       *{box-sizing:border-box}body{margin:0;background:#eff2eb;color:var(--ink);font:16px/1.5 system-ui,-apple-system,sans-serif}
-      .center_div{max-width:860px;margin:auto;padding:32px 24px 48px}.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:750;letter-spacing:-.5px}.brand-mark{display:grid;place-items:center;background:var(--ink);color:#e6f1b5;border-radius:13px;width:42px;height:42px;font-size:24px}.brand small{display:block;font-size:11px;letter-spacing:1.8px;color:var(--muted);font-weight:600;text-transform:uppercase}
+      .center_div{max-width:860px;margin:auto;padding:32px 24px 48px}.brand{display:flex;align-items:center;gap:12px;font-size:19px;font-weight:750;letter-spacing:-.5px}.version{font-size:12px;font-weight:600;letter-spacing:0;color:var(--muted)}.brand-mark{display:grid;place-items:center;background:var(--ink);color:#e6f1b5;border-radius:13px;width:42px;height:42px;font-size:24px}.brand small{display:block;font-size:11px;letter-spacing:1.8px;color:var(--muted);font-weight:600;text-transform:uppercase}
       .nav{display:flex;gap:6px;background:#e2e8df;padding:5px;border-radius:14px;margin:26px 0 30px}.nav img{width:24px;height:24px;display:block}.nav a{display:flex;align-items:center;justify-content:center;min-height:48px;flex:1;text-align:center;padding:10px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:650}.nav a[aria-current]{background:var(--paper);color:var(--ink);box-shadow:0 2px 5px #1529230a}
       h1{font-size:30px;line-height:1.2;letter-spacing:-1px;margin:0 0 8px}h3 label{font:inherit;color:inherit;margin:0}h2,h3{font-size:20px;letter-spacing:-.5px;margin:0 0 18px}p{color:var(--muted);font-size:14px} .intro{margin:0 0 26px}.eyebrow{font-size:11px;letter-spacing:1.6px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
       .devices{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:20px}.devices .card{margin:0}.card-head{display:flex;align-items:center;justify-content:space-between}.device-icon{color:var(--green);font-size:25px}.device-icon img{display:block;width:28px;height:25px}.hint{font-size:12px;color:var(--muted)}
@@ -32,7 +36,7 @@ static const char HTML_LAYOUT[] PROGMEM = R"html(
     </style>
   </head>
   <body><div class="contain"><div class="center_div">
-  <header class="brand"><span class="brand-mark" aria-hidden="true">&#x2301;</span><div>IR Commander</div></header>
+  <header class="brand"><span class="brand-mark" aria-hidden="true">&#x2301;</span><div>IR Commander <small class="version">V)html" UI_STR(FIRMWARE_VERSION) R"html(</small></div></header>
   <nav class="nav" aria-label="Main navigation"><a href="/" aria-label="Home" title="Home"><img src="/icons/home-e4ff8833c2f2.svg" width="24" height="24" alt="" draggable="false"></a><a href="/settings" aria-label="Settings" title="Settings"><img src="/icons/settings-08c94bb532ed.svg" width="24" height="24" alt="" draggable="false"></a></nav>
   <script>document.querySelectorAll('.nav a').forEach(function(a){if(a.getAttribute('href')===(location.pathname==='/'?'/':'/settings'))a.setAttribute('aria-current','page');});</script>
 )html";
